@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+	<name>flex_bt_server</name>
+	<version>0.0.1</version>
+	<description>
+		Server used to load behavior tree XML files to be used in FlexBE
+	</description>
+	<author email="joshua.zutell.18@cnu.edu">Joshua Zutell</author>
+	<maintainer email="david.conner@cnu.edu">Dr. David Conner</maintainer>
+	<license>BSD</license>
+
+	<buildtool_depend>ament_cmake</buildtool_depend>
+
+	<build_depend>nav2_common</build_depend>
+	<build_depend>rosidl_default_generators</build_depend>
+	<build_depend>message_runtime</build_depend>
+
+	<build_depend>flex_bt_msgs</build_depend>
+	<build_depend>geometry_msgs</build_depend>
+	<build_depend>nav2_core</build_depend>
+	<build_depend>nav2_msgs</build_depend>
+	<build_depend>nav2_controller</build_depend>
+	<build_depend>nav_2d_utils</build_depend>
+	<build_depend>dwb_core</build_depend>
+	<build_depend>rclcpp</build_depend>
+	<build_depend>std_msgs</build_depend>
+	<build_depend>tf2_ros</build_depend>
+	<build_depend>nav2_costmap_2d</build_depend>
+	<build_depend>pluginlib</build_depend>
+	<build_depend>nav2_behavior_tree</build_depend>
+	<build_depend>nav_msgs</build_depend>
+	<build_depend>behaviortree_cpp_v3</build_depend>
+	<build_depend>flex_bt_engine</build_depend>
+
+	<exec_depend>rosidl_default_runtime</exec_depend>
+	<exec_depend>behaviortree_cpp_v3</exec_depend>
+	<exec_depend>flex_bt_engine</exec_depend>
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>rclcpp_action</exec_depend>
+  <exec_depend>rclcpp_lifecycle</exec_depend>
+  <exec_depend>nav2_behavior_tree</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>nav2_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>nav2_util</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+
+	<export>
+    	<build_type>ament_cmake</build_type>
+  </export>
+</package>

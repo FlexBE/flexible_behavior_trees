@@ -1,0 +1,13 @@
+string                            behavior_tree
+string                            goal_id
+geometry_msgs/PoseStamped[]       goal_poses
+---
+uint8 SUCCESS=0
+uint8 FAILURE=1
+uint8 CANCEL=2
+
+uint8                             code
+---
+string                            active_nodes
+geometry_msgs/PoseStamped         current_location
+builtin_interfaces/Duration       execution_time

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+	<name>flex_bt_flexbe_states</name>
+	<version>0.0.1</version>
+	<description>
+		 flex_bt_flexbe_states provides a collection of FlexBE states used during the SSP Research
+	</description>
+	<author email="joshua.zutell.18@cnu.edu">Joshua Zutell</author>
+	<maintainer email="david.conner@cnu.edu">Dr. David Conner</maintainer>
+	<license>BSD</license>
+
+	<buildtool_depend>ament_cmake</buildtool_depend>
+
+	<depend>rclpy</depend>
+	<depend>tf2</depend>
+	<depend>tf2_ros</depend>
+	<depend>tf2_geometry_msgs</depend>
+	<depend>geometry_msgs</depend>
+	<depend>flexbe_msgs</depend>
+	<depend>flexbe_core</depend>
+
+	<test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+	<export>
+			<build_type>ament_python</build_type>
+	    <flexbe_states />
+	</export>
+
+</package>
