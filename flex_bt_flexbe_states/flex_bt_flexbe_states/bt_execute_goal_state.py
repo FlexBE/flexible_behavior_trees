@@ -38,12 +38,8 @@
 import traceback
 
 from flexbe_core import EventState, Logger
-from flexbe_core.proxy import ProxyServiceCaller, ProxyActionClient
 from geometry_msgs.msg import TwistStamped
 
-from flexbe_core.proxy import ProxyPublisher
-from flexbe_core.proxy import ProxySubscriberCached
-from flexbe_core.proxy import ProxyServiceCaller
 from flexbe_core.proxy import ProxyActionClient
 
 from flex_bt_msgs.action import BtExecute
@@ -98,7 +94,6 @@ class BtExecuteGoalState(EventState):
         return self._return
 
     def on_enter(self, userdata):
-        #upon entering the state will attempt to load the BT
         self._return  = None
 
         self._goal = BtExecute.Goal(behavior_tree=self._file, goal_id=self._goal_id)
