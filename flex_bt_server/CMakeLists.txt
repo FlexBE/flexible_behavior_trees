@@ -5,11 +5,7 @@ find_package(ament_cmake REQUIRED)
 find_package(flex_bt_msgs REQUIRED)
 find_package(flex_bt_engine REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(nav2_core REQUIRED)
-find_package(nav2_controller REQUIRED)
-find_package(nav2_behavior_tree REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(nav2_msgs REQUIRED)
 find_package(nav_2d_utils REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
@@ -24,13 +20,9 @@ set(dependencies
   rclcpp
   rclcpp_action
   std_msgs
-  nav2_core
-  nav2_controller
   nav2_util
   nav_2d_utils
-  nav2_behavior_tree
   nav_msgs
-  nav2_msgs
   behaviortree_cpp_v3
   dwb_core
   geometry_msgs

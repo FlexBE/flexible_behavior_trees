@@ -311,8 +311,6 @@ namespace flex_bt {
       current_bt_xml_filename_ = action_server_->get_current_goal()->behavior_tree == "" ?
         default_bt_xml_filename_ : action_server_->get_current_goal()->behavior_tree;
 
-      loadBehaviorTree(current_bt_xml_filename_);
-
       current_tree_ = trees_[current_bt_xml_filename_];
 
       if (current_tree_ == nullptr) {
