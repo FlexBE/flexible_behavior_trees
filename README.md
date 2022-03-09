@@ -28,6 +28,22 @@ should first follow the [ROS2 Install Guide] and get that set up before proceedi
 After installing ROS2, git clone this package into a ROS2 workspace and build the packages using
 the automated builder colcon.
 
+## Publications
+
+Please use the following publication for reference when using Flexible Behavior Trees:
+
+- Currently under review
+
+
+### Further Publications for FlexBE
+
+- Philipp Schillinger, Stefan Kohlbrecher, and Oskar von Stryk, ["Human-Robot Collaborative High-Level Control with Application to Rescue Robotics"](http://dx.doi.org/10.1109/ICRA.2016.7487442), IEEE International Conference on Robotics and Automation (ICRA), Stockholm, Sweden, May 2016.
+
+- Stefan Kohlbrecher et al. ["A Comprehensive Software Framework for Complex Locomotion and Manipulation Tasks Applicable to Different Types of Humanoid Robots."](http://dx.doi.org/10.3389/frobt.2016.00031) Frontiers in Robotics and AI 3 (2016): 31.
+
+- Alberto Romay et al., [“Collaborative autonomy between high-level behaviors and human operators for remote manipulation tasks using different humanoid robots,”](http://dx.doi.org/10.1002/rob.21671) Journal of Field Robotics, September 2016.
+
+
 License
 -------
 
