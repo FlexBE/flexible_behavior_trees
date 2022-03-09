@@ -162,6 +162,8 @@ namespace flex_bt {
       current_bt_xml_filename_.clear();
       blackboard_.reset();
 
+      bt_->resetGrootMonitor();
+
       if (current_tree_ != nullptr) {
           bt_->haltAllActions(current_tree_->rootNode());
       }
@@ -185,10 +187,12 @@ namespace flex_bt {
      */
     bool loadBehaviorTree(const std::string & bt_xml_filename = "") {
       auto filename = bt_xml_filename.empty() ? default_bt_xml_filename_ : bt_xml_filename;
+      bt_->resetGrootMonitor();
 
       // Check if the loaded filename before
       if (trees_.count(filename)) {
         RCLCPP_DEBUG(logger_, "BT will not be reloaded as the given xml is already loaded");
+        current_tree_ = trees_[filename];
         return true;
       }
 
@@ -208,10 +212,26 @@ namespace flex_bt {
       BT::Tree* tree = new BT::Tree();
       *tree = bt_->createTreeFromText(xml_string, blackboard_);
       trees_[bt_xml_filename] = tree;
+      current_tree_ = tree;
       current_bt_xml_filename_ = filename;
 
       RCLCPP_INFO(logger_, "Finished loading default bt");
       return true;
+    }
+
+    /**
+     * @brief sets up Groot monitoring for the current BT
+     */
+    void setupGroot() {
+      if (node_->get_parameter("enable_groot_monitoring").as_bool()) {
+        uint16_t zmq_publisher_port = node_->get_parameter("groot_zmq_publisher_port").as_int();
+        uint16_t zmq_server_port = node_->get_parameter("groot_zmq_server_port").as_int();
+        try {
+          bt_->addGrootMonitoring(current_tree_, zmq_publisher_port, zmq_server_port);
+        } catch (const std::logic_error & e) {
+          RCLCPP_ERROR(logger_, "ZMQ already enabled, Error: %s", e.what());
+        }
+      }
     }
 
     /**

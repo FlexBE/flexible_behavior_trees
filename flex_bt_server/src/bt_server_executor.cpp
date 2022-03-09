@@ -148,6 +148,8 @@ namespace flex_bt {
       return false;
     }
 
+    bt_action_server_->setupGroot();
+
     initializeGoalPose(goal);
 
     return true;
