@@ -32,10 +32,12 @@ the automated builder colcon.
 
 Please use the following publication for reference when using Flexible Behavior Trees:
 
-- Currently under review
+- Joshua M. Zutell, David C. Conner, and Philipp Schillinger, ["Flexible Behavior Trees: In search of the mythical HFSMBTH for Collaborative Autonomy in Robotics"](https://doi.org/10.48550/arXiv.2203.05389), preprint, March 2022.
 
 
 ### Further Publications for FlexBE
+
+- Joshua Zutell, David C. Conner and Philipp Schillinger, "ROS 2-Based Flexible Behavior Engine for Flexible Navigation," to appear, SoutheastCon 2022.
 
 - Philipp Schillinger, Stefan Kohlbrecher, and Oskar von Stryk, ["Human-Robot Collaborative High-Level Control with Application to Rescue Robotics"](http://dx.doi.org/10.1109/ICRA.2016.7487442), IEEE International Conference on Robotics and Automation (ICRA), Stockholm, Sweden, May 2016.
 
