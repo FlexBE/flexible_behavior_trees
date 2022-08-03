@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>flexible_behavior_trees</name>
-  <version>0.0.1</version>
+  <version>0.1.1</version>
   <description>
     Flexible Behavior Trees provides a server interface and FlexBE states to load
     a variety of behavior trees and execute them using the FlexBE UI.
@@ -16,9 +16,9 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>flex_bt_msgs</exec_depend>
-  <exec_depend>flex_bt_server</exec_depend>
-  <exec_depend>flex_bt_flexbe_states</exec_depend>
+  <depend>flex_bt_msgs</depend>
+  <depend>flex_bt_server</depend>
+  <depend>flex_bt_flexbe_states</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

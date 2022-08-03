@@ -1,0 +1,9 @@
+string                            goal_id
+string                            goal_msg_type
+string[]                          goal_msg_data
+---
+uint8 SUCCESS=0
+uint8 FAILURE=1
+
+uint8                             code
+---

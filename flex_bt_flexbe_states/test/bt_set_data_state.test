@@ -1,0 +1,12 @@
+path: flex_bt_flexbe_states.bt_set_data_state
+class: BtSetDataState
+
+import_only: true
+
+params:
+    bt_topic: 'bt_test_topic'
+    goal_id: 1
+    goal_msg_type: "Pose"
+
+outcome:
+    done

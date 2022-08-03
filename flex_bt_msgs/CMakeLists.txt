@@ -21,6 +21,8 @@ find_package(geometry_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/BtLoad.action"
   "action/BtExecute.action"
+  "action/BtSetData.action"
+  "action/BtGetData.action"
   DEPENDENCIES builtin_interfaces geometry_msgs std_msgs action_msgs
 )
 

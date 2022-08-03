@@ -1,0 +1,12 @@
+path: flex_bt_flexbe_states.bt_loader_state
+class: BtLoaderState
+
+import_only: true
+
+params:
+    bt_topic: 'bt_test_topic'
+    filepaths: 'bt_test_files'
+    timeout: 5.0
+
+outcome:
+    done

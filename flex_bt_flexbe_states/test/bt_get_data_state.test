@@ -1,0 +1,13 @@
+path: flex_bt_flexbe_states.bt_get_data_state
+class: BtGetDataState
+
+import_only: true
+
+params:
+    bt_topic: 'bt_test_topic'
+    request_id: 2
+    request_msg_pkg: "geometry_msgs"
+    request_msg_type: "PoseStamped"
+
+outcome:
+    done

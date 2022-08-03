@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 ###############################################################################
-#  Copyright (c) 2016-2017
+#  Copyright (c) 2022
 #  Capable Humanitarian Robotics and Intelligent Systems Lab (CHRISLab)
 #  Christopher Newport University
 #
@@ -55,7 +55,7 @@ class BtExecuteState(EventState):
     #> bt_files          string[]     List of BT files to choose from
     #> goal              PoseStamped  Either a single goal or list of goals
     <= done                           Finished behavior tree action
-    <= canceled                      Cancel current behavior tree action
+    <= canceled                       Cancel current behavior tree action
     <= failed                         Unable to perform behavior tree action
     '''
 
@@ -72,12 +72,17 @@ class BtExecuteState(EventState):
         ProxyActionClient._initialize(BtExecuteState._node)
         self._client = ProxyActionClient({self._topic: BtExecute})
 
+
     def execute(self, userdata):
+        if self._return:
+            # Handle blocked transition by returning previous value
+            return self._return
+
         if self._client.has_result(self._topic):
             result = self._client.get_result(self._topic)
-            ProxyActionClient._result[self._topic] = None # Reset to avoid spam if blocked by low autonomy
+            ProxyActionClient._result[self._topic] = None
             if result.code == 0:
-                Logger.loginfo('%s   Planning Success!' % (self.name))
+                Logger.loginfo('%s  Success!' % (self.name))
                 self._return = 'done'
             elif result.code == 1:
                 Logger.logerr('%s   Failure' % (self.name))
@@ -91,17 +96,19 @@ class BtExecuteState(EventState):
 
         return self._return
 
+
     def on_enter(self, userdata):
         self._return  = None
 
         self._goal = BtExecute.Goal(behavior_tree=self._file)
 
         try:
-            self._client.send_goal(self._topic, self._goal)
             Logger.loginfo('Sending behavior tree goal using topic %s ' % (self._topic))
+            self._client.send_goal(self._topic, self._goal)
         except Exception as e:
             Logger.logwarn('Was not able to send behavior tree goal using topic  %s ' % (self._topic))
             Logger.logwarn("Error : %s" % (e))
+
 
     def on_exit(self, userdata):
         if self._topic in ProxyActionClient._result:

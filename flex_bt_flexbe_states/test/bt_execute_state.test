@@ -1,0 +1,11 @@
+path: flex_bt_flexbe_states.bt_execute_state
+class: BtExecuteState
+
+import_only: true
+
+params:
+    bt_topic: 'bt_test_topic'
+    bt_file: 'bt_test_file'
+
+outcome:
+    done

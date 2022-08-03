@@ -7,10 +7,10 @@ find_package(flex_bt_engine REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(nav_2d_utils REQUIRED)
+find_package(nav2_bt_navigator REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(dwb_core REQUIRED)
-find_package(navigation2 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -20,6 +20,7 @@ set(dependencies
   rclcpp
   rclcpp_action
   std_msgs
+  nav2_bt_navigator
   nav2_util
   nav_2d_utils
   nav_msgs

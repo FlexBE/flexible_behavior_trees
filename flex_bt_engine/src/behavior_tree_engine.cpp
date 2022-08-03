@@ -13,10 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "rclcpp/rclcpp.hpp"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "flex_bt_engine/behavior_tree_engine.hpp"
@@ -47,7 +43,12 @@ namespace flex_bt {
         return BtStatus::CANCELED;
       }
 
-      result = tree->tickRoot();
+      try {
+          result = tree->tickRoot();
+      }
+      catch (const std::exception& ex) {
+        return BtStatus::FAILED;
+      }
 
       onLoop();
 

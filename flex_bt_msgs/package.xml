@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
 	<name>flex_bt_msgs</name>
-	<version>0.0.1</version>
+	<version>0.1.1</version>
 	<description>
 		Messages used in the behavior tree action servers
 	</description>

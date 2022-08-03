@@ -1,12 +1,19 @@
 string                            behavior_tree
+
 string                            goal_id
-geometry_msgs/PoseStamped[]       goal_poses
+string                            msg_type
+string[]                          msg_data
+
+string                            result_msg_type
+string                            result_id
 ---
 uint8 SUCCESS=0
 uint8 FAILURE=1
 uint8 CANCEL=2
 
 uint8                             code
+
+string[]                          result_data
 ---
 string                            active_nodes
 geometry_msgs/PoseStamped         current_location

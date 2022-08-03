@@ -1,0 +1,16 @@
+path: flex_bt_flexbe_states.bt_execute_goal_state
+class: BtExecuteGoalState
+
+import_only: true
+
+params:
+    bt_topic: 'bt_test_topic'
+    bt_file: 'bt_test_file'
+    goal_id: 1
+    goal_msg_type: "Pose"
+    request_id: 2
+    request_msg_pkg: "geometry_msgs"
+    request_msg_type: "PoseStamped"
+
+outcome:
+    done

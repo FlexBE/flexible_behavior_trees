@@ -1,0 +1,10 @@
+string                            request_id
+string                            request_msg_type
+---
+uint8 SUCCESS=0
+uint8 FAILURE=1
+
+uint8                             code
+
+string[]                          result_data
+---
