@@ -16,55 +16,48 @@
 #ifndef FLEX_BT_ENGINE__BEHAVIOR_TREE_ENGINE_HPP_
 #define FLEX_BT_ENGINE__BEHAVIOR_TREE_ENGINE_HPP_
 
+#include <exception>
 #include <memory>
 #include <string>
 #include <vector>
-#include <exception>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/xml_parsing.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
+#include "behaviortree_cpp_v3/xml_parsing.h"
 
+namespace flex_bt
+{
 
-namespace flex_bt {
+enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
 
-  enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
+class BehaviorTreeEngine
+{
+public:
+  explicit BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries);
+  virtual ~BehaviorTreeEngine() {}
 
-  class BehaviorTreeEngine {
-  public:
-    explicit BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries);
-    virtual ~BehaviorTreeEngine() {}
+  BtStatus run(
+    BT::Tree * tree, std::function<void()> onLoop, std::function<bool()> cancelRequested,
+    std::chrono::milliseconds loopTimeout = std::chrono::milliseconds(10));
 
-    BtStatus run(
-      BT::Tree * tree,
-      std::function<void()> onLoop,
-      std::function<bool()> cancelRequested,
-      std::chrono::milliseconds loopTimeout = std::chrono::milliseconds(10));
+  BT::Tree createTreeFromText(const std::string & xml_string, BT::Blackboard::Ptr blackboard);
 
-    BT::Tree createTreeFromText(
-      const std::string & xml_string,
-      BT::Blackboard::Ptr blackboard);
+  BT::Tree createTreeFromFile(const std::string & file_path, BT::Blackboard::Ptr blackboard);
 
-    BT::Tree createTreeFromFile(
-      const std::string & file_path,
-      BT::Blackboard::Ptr blackboard);
+  void addGrootMonitoring(
+    BT::Tree * tree, uint16_t publisher_port, uint16_t server_port,
+    uint16_t max_msg_per_second = 25);
 
-    void addGrootMonitoring(
-      BT::Tree * tree,
-      uint16_t publisher_port,
-      uint16_t server_port,
-      uint16_t max_msg_per_second = 25);
+  void resetGrootMonitor();
 
-    void resetGrootMonitor();
+  void haltAllActions(BT::TreeNode * root_node);
 
-    void haltAllActions(BT::TreeNode * root_node);
+protected:
+  // The factory that will be used to dynamically construct the behavior tree
+  BT::BehaviorTreeFactory factory_;
+  std::unique_ptr<BT::PublisherZMQ> groot_monitor_;
+};
+}  // namespace flex_bt
 
-  protected:
-    // The factory that will be used to dynamically construct the behavior tree
-    BT::BehaviorTreeFactory factory_;
-    std::unique_ptr<BT::PublisherZMQ> groot_monitor_;
-  };
-}
-
-#endif
+#endif  // FLEX_BT_ENGINE__BEHAVIOR_TREE_ENGINE_HPP_

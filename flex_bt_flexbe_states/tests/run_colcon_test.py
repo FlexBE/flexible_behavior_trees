@@ -27,39 +27,44 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from os.path import join
-
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.substitutions import LaunchConfiguration
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from ament_index_python.packages import get_package_share_directory
+"""Pytest testing for flexbe_states."""
 
 
-def generate_launch_description():
+from flexbe_testing.py_tester import PyTester
 
-    flexbe_testing_dir = get_package_share_directory('flexbe_testing')
-    flex_bt_states_test_dir = get_package_share_directory('flex_bt_flexbe_states')
 
-    path = join(flex_bt_states_test_dir, "test")
+class TestFlexBEStates(PyTester):
+    """Pytest testing for flexbe_states."""
 
-    testcases = ""
-    testcases += join(path, "bt_execute_goal_state.test") + "\n"
-    testcases += join(path, "bt_execute_state.test") + "\n"
-    testcases += join(path, "bt_get_data_state.test") + "\n"
-    testcases += join(path, "bt_loader_state.test") + "\n"
-    testcases += join(path, "bt_set_data_state.test") + "\n"
+    def __init__(self, *args, **kwargs):
+        """Initialize unit test."""
+        super().__init__(*args, **kwargs)
 
-    return LaunchDescription([
-        DeclareLaunchArgument("pkg", default_value="flex_bt_flexbe_states"),
-        DeclareLaunchArgument("testcases", default_value=testcases),
-        DeclareLaunchArgument("compact_format", default_value='true'),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(join(flexbe_testing_dir, "launch", "flexbe_testing.launch.py")),
-            launch_arguments={
-                'package': LaunchConfiguration("pkg"),
-                'compact_format': LaunchConfiguration("compact_format"),
-                'testcases': LaunchConfiguration("testcases"),
-            }.items()
-        )
-    ])
+    @classmethod
+    def setUpClass(cls):
+
+        PyTester._package = "flex_bt_flexbe_states"
+        PyTester._tests_folder = "tests"
+
+        super().setUpClass()  # Do this last after setting package and tests folder
+
+    # The tests
+    def test_bt_execute_goal_state(self):
+        """Run FlexBE unit test given .test file."""
+        self.run_test("bt_execute_goal_state")
+
+    def test_bt_execute_state(self):
+        """Run FlexBE unit test given .test file."""
+        self.run_test("bt_execute_state")
+
+    def test_bt_get_data_state(self):
+        """Run FlexBE unit test given .test file."""
+        self.run_test("bt_get_data_state")
+
+    def test_bt_loader_state(self):
+        """Run FlexBE unit test given .test file."""
+        self.run_test("bt_loader_state")
+
+    def test_bt_set_data_state(self):
+        """Run FlexBE unit test given .test file."""
+        self.run_test("bt_set_data_state")

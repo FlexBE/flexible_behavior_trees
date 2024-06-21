@@ -30,3 +30,25 @@ modification, are permitted provided that the following conditions are met:
      LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
      WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
      POSSIBILITY OF SUCH DAMAGE.
+
+
+Portions of this code derived from navigation2 under an Apache 2.0 license.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+Contributions to existing files should be made under the license of that file.
+
+New files should be made under the first license listed in the appropriate
+package.xml file
+
+For files that are not otherwise marked, they are provided under the Apache-2.0
+license.

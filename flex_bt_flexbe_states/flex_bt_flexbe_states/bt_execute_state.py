@@ -35,10 +35,7 @@
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
 
-import traceback
-
 from flexbe_core import EventState, Logger
-from geometry_msgs.msg import TwistStamped
 
 from flexbe_core.proxy import ProxyActionClient
 
@@ -47,9 +44,9 @@ from ament_index_python.packages import get_package_share_directory
 
 
 class BtExecuteState(EventState):
+    """
+    Execute a Behavior Tree from a file defined by the userdata.
 
-    '''
-    Executes a Behavior Tree from a file defined by the userdata
     -- bt_topic          string       Topic name of the behavior tree action server
     -- bt_file           string       The behavior tree xml file to execute
     #> bt_files          string[]     List of BT files to choose from
@@ -57,21 +54,20 @@ class BtExecuteState(EventState):
     <= done                           Finished behavior tree action
     <= canceled                       Cancel current behavior tree action
     <= failed                         Unable to perform behavior tree action
-    '''
+    """
 
     def __init__(self, bt_topic, bt_file):
-        super(BtExecuteState, self).__init__(outcomes = ['done', 'canceled', 'failed'])
+        super(BtExecuteState, self).__init__(outcomes=['done', 'canceled', 'failed'])
 
         self._topic = bt_topic
-        self._return  = None
+        self._return = None
 
         fileparts = bt_file.split("/")
         fileparts[0] = get_package_share_directory(fileparts[0])
         self._file = "/".join(fileparts)
 
-        ProxyActionClient._initialize(BtExecuteState._node)
-        self._client = ProxyActionClient({self._topic: BtExecute})
-
+        ProxyActionClient.initialize(BtExecuteState._node)
+        self._client = ProxyActionClient({self._topic: BtExecute}, wait_duration=0)
 
     def execute(self, userdata):
         if self._return:
@@ -86,19 +82,18 @@ class BtExecuteState(EventState):
                 self._return = 'done'
             elif result.code == 1:
                 Logger.logerr('%s   Failure' % (self.name))
-                self._return =  'failed'
+                self._return = 'failed'
             elif result.code == 2:
                 Logger.logerr('%s   Canceled' % (self.name))
-                self._return =  'canceled'
+                self._return = 'canceled'
             else:
                 Logger.logerr('%s   Unknown error' % (self.name))
-                self._return =  'failed'
+                self._return = 'failed'
 
         return self._return
 
-
     def on_enter(self, userdata):
-        self._return  = None
+        self._return = None
 
         self._goal = BtExecute.Goal(behavior_tree=self._file)
 
@@ -108,7 +103,6 @@ class BtExecuteState(EventState):
         except Exception as e:
             Logger.logwarn('Was not able to send behavior tree goal using topic  %s ' % (self._topic))
             Logger.logwarn("Error : %s" % (e))
-
 
     def on_exit(self, userdata):
         if self._topic in ProxyActionClient._result:

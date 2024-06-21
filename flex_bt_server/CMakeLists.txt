@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(flex_bt_server)
 
 find_package(ament_cmake REQUIRED)
@@ -32,15 +32,15 @@ set(dependencies
 )
 
 include_directories(
-	include
+  include
 )
 
 add_executable(${PROJECT_NAME}_bt_server_executor_node
-	src/bt_server_executor_node.cpp
-	src/bt_server_executor.cpp
+  src/bt_server_executor_node.cpp
+  src/bt_server_executor.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}_bt_server_executor_node
-	${dependencies})
+  ${dependencies})
 
 install(TARGETS ${library_name}
                 ${actions}
@@ -50,15 +50,15 @@ install(TARGETS ${library_name}
 )
 
 install(
-	TARGETS
+  TARGETS
     ${PROJECT_NAME}_bt_server_executor_node
-	RUNTIME DESTINATION lib/${PROJECT_NAME}
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/
-	DESTINATION include/${PROJECT_NAME}
-	FILES_MATCHING PATTERN "*.h"
+  DESTINATION include/${PROJECT_NAME}
+  FILES_MATCHING PATTERN "*.h"
 )
 
 ament_package()

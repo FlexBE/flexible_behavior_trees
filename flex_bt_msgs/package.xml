@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package format="3">
 	<name>flex_bt_msgs</name>
-	<version>0.1.1</version>
+	<version>0.1.2</version>
 	<description>
 		Messages used in the behavior tree action servers
 	</description>
 	<author email="joshua.zutell.18@cnu.edu">Joshua Zutell</author>
-	<maintainer email="david.conner@cnu.edu">Dr. David Conner</maintainer>
+	<maintainer email="robotics@cnu.edu">Dr. David Conner</maintainer>
 	<license>BSD</license>
 
 	<buildtool_depend>ament_cmake</buildtool_depend>

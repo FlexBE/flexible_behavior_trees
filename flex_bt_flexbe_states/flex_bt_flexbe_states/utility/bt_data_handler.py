@@ -39,38 +39,39 @@ import importlib
 import rosidl_runtime_py.set_message
 import rosidl_runtime_py.convert
 import rclpy.time as time
-from ament_index_python.packages import get_package_share_directory
+
+from flexbe_core import Logger
 
 
 class BtDataHandler:
+    """
+    Common primitive and ROS message data handling for interfacing with behavior trees.
 
-    '''
-    Common primitive and ROS message data handling for interfacing with behavior trees
-    via the flex_bt_server Action servers.
+    Performed via the flex_bt_server Action servers.
 
     -- msg_type  string   The message type of the requested data (ex. PoseStamped or double[])
     -- msg_pkg   string   The package of the message ex. PoseStamped pkg is geometry_msgs
-    '''
+    """
 
-    _primitives = ("string", "char", "bool", "int", "double", "float")#, "int[]", "double[]", "float[]")
-    _primitive_classes = {"string":str, "char":str, "bool":bool, "int":int, "double":float, "float":float}
+    _primitives = ("string", "char", "bool", "int", "double", "float")  # , "int[]", "double[]", "float[]")
+    _primitive_classes = {"string": str, "char": str, "bool": bool, "int": int, "double": float, "float": float}
 
     def __init__(self, msg_type="", msg_pkg=""):
 
-        self._msg_pkg  = msg_pkg
+        self._msg_pkg = msg_pkg
         self._msg_type = msg_type.lower()
         self._msg_base_type = msg_type.lower()
         if "[]" in self._msg_base_type:
             self._msg_base_type = self._msg_base_type.replace("[]", "")
 
-        self._is_floating_point  = self._msg_base_type == "float" or self._msg_base_type == "double"
+        self._is_floating_point = self._msg_base_type == "float" or self._msg_base_type == "double"
 
         self._msg_base_class = None
         if self._msg_base_type == "path":
             try:
                 if msg_pkg == "":
                     msg_pkg = "geometry_msgs"
-                    self._msg_pkg  = msg_pkg
+                    self._msg_pkg = msg_pkg
 
                 pose_module = importlib.import_module("geometry_msgs.msg")
                 self._path_pose_class = getattr(pose_module, "PoseStamped")
@@ -78,7 +79,6 @@ class BtDataHandler:
                 raise ValueError(' Failed to load pose class for type %s/%s.msg\n %s' % (msg_pkg, msg_type, str(exc)))
         else:
             self._path_pose_class = None
-
 
         if self._msg_base_type not in self._primitives:
             if msg_pkg != "" and msg_type != "":
@@ -96,17 +96,13 @@ class BtDataHandler:
             self._msg_base_class = BtDataHandler._primitive_classes[self._msg_base_type]
             self.create_data_from_result = self._create_primitve_from_data_string_list
 
-
     @staticmethod
     def convert_primitives(data):
-        '''
-        Convert data to standard string format for data handling
-        '''
+        """Convert data to standard string format for data handling."""
         if type(data) is list:
             return ";".join(str(element) for element in data)
         else:
             return str(data)
-
 
     @staticmethod
     def split_data_string(data_string):
@@ -119,16 +115,19 @@ class BtDataHandler:
             raise ValueError(' Debug split_data_string \n   Data (%s)\n%s' % (str(data_string), exc))
 
     def _create_primitve_from_data_string_list(self, data_string_list):
-        '''
-        Given a list of formated data_string from BtServer,
-        convert to specified data type.
-            NOTE: Presumed called as create_primitve_from_data_string(result.result_data)
+        """
+        Convert a list of formated data_string from BtServer to specified data type.
+
+        NOTE: Presumed called as create_primitve_from_data_string(result.result_data)
 
         @param data_string  ['formated_string']
         @return appropriate data
-        '''
-
-        assert len(data_string_list) == 1, f"Calling create_primitve with list of length={len(data_string_list)}"
+        """
+        # assert len(data_string_list) == 1, f"Calling create_primitve with list of length={len(data_string_list)}"
+        if len(data_string_list) == 0:
+            raise ValueError(f"Cannot create primitive with no data.")
+        elif len(data_string_list) > 1:
+            raise ValueError(f"Too many arguments recieved.")
         data = BtDataHandler.split_data_string(data_string_list[0])
 
         if data[-1] == "":
@@ -157,7 +156,7 @@ class BtDataHandler:
             else:
                 raise ValueError(f"Invalid data for bool type ({data[0]})")
 
-        elif self._msg_base_type == "int" :
+        elif self._msg_base_type == "int":
             ints = []
             for item in data:
                 ints.append(int(item))
@@ -170,17 +169,15 @@ class BtDataHandler:
             # Treat as string type
             return data
 
-
     def _create_msgs_from_data_string_list(self, data_string_list):
-        '''
-        Given a list of formated data_string from BtServer,
-        convert to specified data type.
-            NOTE: Presumed called as create_msgs_from_data_string_list(result.result_data)
+        """
+        Convert a list of formated data_string from BtServer to specified data type.
+
+        NOTE: Presumed called as create_msgs_from_data_string_list(result.result_data)
 
         @param data_string  ['formated_string']
         @return appropriate data
-        '''
-
+        """
         try:
 
             messages = []
@@ -224,14 +221,14 @@ class BtDataHandler:
         for key in fields.keys():
             try:
                 if str(key) != "stamp":
-                    subfields = rosidl_runtime_py.convert.get_message_slot_types(getattr(message, key))
+                    _ = rosidl_runtime_py.convert.get_message_slot_types(getattr(message, key))  # verify key
                     base_msg = False
 
                     sub_msg, new_data = BtDataHandler.populate_msg(getattr(message, key), data)
 
                     setattr(message, key, sub_msg)
                     data = new_data
-            except:
+            except Exception:  # pylint: disable=W0703
                 continue
 
         if base_msg:
@@ -242,7 +239,7 @@ class BtDataHandler:
                 if field_data[0] == "stamp":
                     try:
                         fields_dict[field_data[0]] = time.Time(nanoseconds=int(field_data[1])).to_msg()
-                    except:
+                    except Exception:  # pylint: disable=W0703
                         # No node access to time stamp as current node time, so just flag
                         fields_dict[field_data[0]] = time.Time(nanoseconds=0).to_msg()
                 else:
@@ -254,23 +251,21 @@ class BtDataHandler:
             else:
                 rosidl_runtime_py.set_message.set_message_fields(message, fields_dict)
 
-            new_data_list = data[data.index("")+1:]
+            new_data_list = data[data.index("") + 1:]
             return message, new_data_list
 
         return message, data
 
     def create_data_string(self, data_list):
-        """
-        Create data string for BtServer from list of messages
-        """
+        """Create data string for BtServer from list of messages."""
         msg_data = []
 
         if self._msg_type in self._primitives:
             msg_data.append(self.convert_primitives(data_list))
         elif self._msg_type == "path":
             path = data_list[0]
-            assert self._msg_type in path.__class__.__name__.lower() , f"Goal type mis-match {path.__class__.__name__} not Path!"
-            fields = rosidl_runtime_py.convert.get_message_slot_types(path)
+            assert self._msg_type in path.__class__.__name__.lower(), f"Goal type mis-match {path.__class__.__name__} not Path!"
+            # fields = rosidl_runtime_py.convert.get_message_slot_types(path)
             msg_data.append(BtDataHandler.get_fields(getattr(path, "header"), ""))
             for pose in getattr(path, "poses"):
                 msg_data.append(BtDataHandler.get_fields(pose, ""))
@@ -283,11 +278,8 @@ class BtDataHandler:
 
     @staticmethod
     def get_fields(message, data):
-        '''
-        Extract data fields from message and add to string in standard format
-        '''
+        """Extract data fields from message and add to string in standard format."""
         try:
-
             # fields is an OrderedDict that preserves key order
             fields = rosidl_runtime_py.convert.get_message_slot_types(message)
 
@@ -308,15 +300,12 @@ class BtDataHandler:
 
     @staticmethod
     def check_fields(message1, message2):
-        '''
-        Validate data fields in two messages of same type
-        '''
+        """Validate data fields in two messages of same type."""
         if not isinstance(message1, message2.__class__):
             print("Messages must be same type to compare")
             return False
 
         try:
-
             # fields is an OrderedDict that preserves key order
             fields = rosidl_runtime_py.convert.get_message_slot_types(message1)
 

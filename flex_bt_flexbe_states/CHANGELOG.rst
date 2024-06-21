@@ -1,0 +1,7 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package flex_bt_flexbe_states
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+0.1.2 (2024-06-21)
+------------------
+* Initial development for ROS 2 FLexBE

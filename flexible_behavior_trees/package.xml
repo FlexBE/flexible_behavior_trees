@@ -2,13 +2,13 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>flexible_behavior_trees</name>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <description>
     Flexible Behavior Trees provides a server interface and FlexBE states to load
     a variety of behavior trees and execute them using the FlexBE UI.
   </description>
   <author email="joshua.zutell.18@cnu.edu">Joshua Zutell</author>
-  <maintainer email="david.conner@cnu.edu">Dr. David Conner</maintainer>
+  <maintainer email="robotics@cnu.edu">Dr. David Conner</maintainer>
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/flexible_navigation</url>
   <url type="repository">https://github.com/FlexBE/flexible_behavior_trees</url>

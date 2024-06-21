@@ -36,44 +36,36 @@
 ###############################################################################
 ###############################################################################
 
-import traceback
-
 from flexbe_core import EventState, Logger
-from flexbe_core.proxy import ProxyServiceCaller, ProxyActionClient
-from geometry_msgs.msg import TwistStamped
-
-from flexbe_core.proxy import ProxyPublisher
-from flexbe_core.proxy import ProxySubscriberCached
-from flexbe_core.proxy import ProxyServiceCaller
 from flexbe_core.proxy import ProxyActionClient
 
 from flex_bt_msgs.action import BtLoad
 
 from ament_index_python.packages import get_package_share_directory
 
-class BtLoaderState(EventState):
 
-    '''
-    Loads Behavior Trees from a files defined by the userdata
+class BtLoaderState(EventState):
+    """
+    Load Behavior Trees from a files defined by the userdata.
+
     -- bt_topic          string      topic name of the behavior tree server to load a behavior tree
     -- filepaths         string[]    filepaths of the behavior tree defined using Navigation2 XML format
     -- timeout           double      seconds to wait before declaring failure (default: 5.0)
     <= done                           Finished loading behavior trees
     <= failed                         Unable to load behavior trees
-    '''
+    """
 
-    def __init__(self, bt_topic, filepaths, timeout=5.0 ):
-        super(BtLoaderState, self).__init__(outcomes = ['done', 'failed'])
+    def __init__(self, bt_topic, filepaths, timeout=5.0):
+        super(BtLoaderState, self).__init__(outcomes=['done', 'failed'])
 
         self._topic = bt_topic
         self._filepaths = filepaths
         self._timeout = timeout
-        self._return  = None
-        ProxyActionClient._initialize(BtLoaderState._node)
+        self._return = None
+        ProxyActionClient.initialize(BtLoaderState._node)
 
         # Need custom BTLoad action that takes a filename string to load
-        self._client = ProxyActionClient({self._topic: BtLoad})
-
+        self._client = ProxyActionClient({self._topic: BtLoad}, wait_duration=0)
 
     def execute(self, userdata):
 
@@ -83,33 +75,32 @@ class BtLoaderState(EventState):
 
         if self._client.has_result(self._topic):
             result = self._client.get_result(self._topic)
-            ProxyActionClient._result[self._topic] = None # Reset to avoid spam if blocked by low autonomy
+            ProxyActionClient._result[self._topic] = None  # Reset to avoid spam if blocked by low autonomy
             if result.code == 0:
                 Logger.loginfo('%s   BT Loading Success!' % (self.name))
                 self._return = 'done'
             elif result.code == 1:
                 Logger.logerr('%s   Failure' % (self.name))
-                self._return =  'failed'
+                self._return = 'failed'
             elif result.code == 2:
                 Logger.logerr('%s   Canceled' % (self.name))
-                self._return =  'failed'
+                self._return = 'failed'
             else:
                 Logger.logerr('%s   Unknown error' % (self.name))
-                self._return =  'failed'
+                self._return = 'failed'
 
         elapsed = self._node.get_clock().now() - self._start_time
         if self._return is None and elapsed.nanoseconds * 1e-9 > self._timeout:
-            Logger.logwarn('Timeout waiting to receive result from behavior tree action server' )
+            Logger.logwarn('Timeout waiting to receive result from behavior tree action server')
             self._return = 'failed'
             return 'failed'
 
         # Waiting on action results
         return self._return
 
-
     def on_enter(self, userdata):
-        #upon entering the state will attempt to load the BT
-        self._return  = None
+        # upon entering the state will attempt to load the BT
+        self._return = None
 
         try:
             # Find each file in the workspace shared directory

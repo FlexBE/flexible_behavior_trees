@@ -13,94 +13,81 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rclcpp/rclcpp.hpp"
-#include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "flex_bt_engine/behavior_tree_engine.hpp"
 
-namespace flex_bt {
+#include "behaviortree_cpp_v3/utils/shared_library.h"
+#include "rclcpp/rclcpp.hpp"
 
-  BehaviorTreeEngine::BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries) {
-    BT::SharedLibrary loader;
-    for (const auto & p : plugin_libraries) {
-      factory_.registerFromPlugin(loader.getOSName(p));
-    }
-  }
+namespace flex_bt
+{
 
-  BtStatus
-  BehaviorTreeEngine::run(
-    BT::Tree * tree,
-    std::function<void()> onLoop,
-    std::function<bool()> cancelRequested,
-    std::chrono::milliseconds loopTimeout)
-  {
-    rclcpp::WallRate loopRate(loopTimeout);
-    BT::NodeStatus result = BT::NodeStatus::RUNNING;
-
-    // Loop until something happens with ROS or the node completes
-    while (rclcpp::ok() && result == BT::NodeStatus::RUNNING) {
-      if (cancelRequested()) {
-        tree->rootNode()->halt();
-        return BtStatus::CANCELED;
-      }
-
-      try {
-          result = tree->tickRoot();
-      }
-      catch (const std::exception& ex) {
-        return BtStatus::FAILED;
-      }
-
-      onLoop();
-
-      loopRate.sleep();
-    }
-
-    return (result == BT::NodeStatus::SUCCESS) ? BtStatus::SUCCEEDED : BtStatus::FAILED;
-  }
-
-  BT::Tree
-  BehaviorTreeEngine::createTreeFromText(
-    const std::string & xml_string,
-    BT::Blackboard::Ptr blackboard)
-  {
-    return factory_.createTreeFromText(xml_string, blackboard);
-  }
-
-  BT::Tree
-  BehaviorTreeEngine::createTreeFromFile(
-    const std::string & file_path,
-    BT::Blackboard::Ptr blackboard)
-  {
-    return factory_.createTreeFromFile(file_path, blackboard);
-  }
-
-  void
-  BehaviorTreeEngine::addGrootMonitoring(
-    BT::Tree * tree,
-    uint16_t publisher_port,
-    uint16_t server_port,
-    uint16_t max_msg_per_second)
-  {
-    // This logger publish status changes using ZeroMQ. Used by Groot
-    groot_monitor_ = std::make_unique<BT::PublisherZMQ>(
-      *tree, max_msg_per_second, publisher_port,
-      server_port);
-  }
-
-  void
-  BehaviorTreeEngine::resetGrootMonitor() {
-    groot_monitor_.reset();
-  }
-
-  void
-  BehaviorTreeEngine::haltAllActions(BT::TreeNode * root_node) {
-    // this halt signal should propagate through the entire tree.
-    root_node->halt();
-    auto visitor = [](BT::TreeNode * node) {
-        if (node->status() == BT::NodeStatus::RUNNING) {
-          node->halt();
-        }
-      };
-    BT::applyRecursiveVisitor(root_node, visitor);
+BehaviorTreeEngine::BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries)
+{
+  BT::SharedLibrary loader;
+  for (const auto & p : plugin_libraries) {
+    factory_.registerFromPlugin(loader.getOSName(p));
   }
 }
+
+BtStatus BehaviorTreeEngine::run(
+  BT::Tree * tree, std::function<void()> onLoop, std::function<bool()> cancelRequested,
+  std::chrono::milliseconds loopTimeout)
+{
+  rclcpp::WallRate loopRate(loopTimeout);
+  BT::NodeStatus result = BT::NodeStatus::RUNNING;
+
+  // Loop until something happens with ROS or the node completes
+  while (rclcpp::ok() && result == BT::NodeStatus::RUNNING) {
+    if (cancelRequested()) {
+      tree->rootNode()->halt();
+      return BtStatus::CANCELED;
+    }
+
+    try {
+      result = tree->tickRoot();
+    } catch (const std::exception & ex) {
+      return BtStatus::FAILED;
+    }
+
+    onLoop();
+
+    loopRate.sleep();
+  }
+
+  return (result == BT::NodeStatus::SUCCESS) ? BtStatus::SUCCEEDED : BtStatus::FAILED;
+}
+
+BT::Tree BehaviorTreeEngine::createTreeFromText(
+  const std::string & xml_string, BT::Blackboard::Ptr blackboard)
+{
+  return factory_.createTreeFromText(xml_string, blackboard);
+}
+
+BT::Tree BehaviorTreeEngine::createTreeFromFile(
+  const std::string & file_path, BT::Blackboard::Ptr blackboard)
+{
+  return factory_.createTreeFromFile(file_path, blackboard);
+}
+
+void BehaviorTreeEngine::addGrootMonitoring(
+  BT::Tree * tree, uint16_t publisher_port, uint16_t server_port, uint16_t max_msg_per_second)
+{
+  // This logger publish status changes using ZeroMQ. Used by Groot
+  groot_monitor_ =
+    std::make_unique<BT::PublisherZMQ>(*tree, max_msg_per_second, publisher_port, server_port);
+}
+
+void BehaviorTreeEngine::resetGrootMonitor() { groot_monitor_.reset(); }
+
+void BehaviorTreeEngine::haltAllActions(BT::TreeNode * root_node)
+{
+  // this halt signal should propagate through the entire tree.
+  root_node->halt();
+  auto visitor = [](BT::TreeNode * node) {
+    if (node->status() == BT::NodeStatus::RUNNING) {
+      node->halt();
+    }
+  };
+  BT::applyRecursiveVisitor(root_node, visitor);
+}
+}  // namespace flex_bt

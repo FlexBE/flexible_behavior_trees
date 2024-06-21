@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 ###############################################################################
-#  Copyright (c) 2022
+#  Copyright (c) 2023
 #  Capable Humanitarian Robotics and Intelligent Systems Lab (CHRISLab)
 #  Christopher Newport University
 #
@@ -35,10 +35,6 @@
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
 
-import importlib
-import rosidl_runtime_py.set_message
-import rosidl_runtime_py.convert
-
 from .utility.bt_data_handler import BtDataHandler
 
 from flexbe_core import EventState, Logger
@@ -49,9 +45,9 @@ from ament_index_python.packages import get_package_share_directory
 
 
 class BtExecuteGoalState(EventState):
+    """
+    Execute a Behavior Tree from a file defined by the userdata.
 
-    '''
-    Executes a Behavior Tree from a file defined by the userdata
     Also allows for setting and getting userdata
     -- bt_topic          string       Topic name of the behavior tree action server
     -- bt_file           string       The behavior tree xml file to execute
@@ -65,10 +61,13 @@ class BtExecuteGoalState(EventState):
     <= done                           Finished behavior tree action
     <= canceled                       Cancel current behavior tree action
     <= failed                         Unable to perform behavior tree action
-    '''
+    """
 
-    def __init__(self, bt_topic, bt_file, goal_id, goal_msg_type, request_id="", request_msg_pkg="", request_msg_type=""):
-        super(BtExecuteGoalState, self).__init__(outcomes = ['done', 'canceled', 'failed'], input_keys=['goal'], output_keys=['data'])
+    def __init__(self, bt_topic, bt_file, goal_id, goal_msg_type, request_id="",
+                 request_msg_pkg="", request_msg_type=""):
+        super(BtExecuteGoalState, self).__init__(outcomes=['done', 'canceled', 'failed'],
+                                                 input_keys=['goal'],
+                                                 output_keys=['data'])
 
         self._topic = bt_topic
 
@@ -78,15 +77,14 @@ class BtExecuteGoalState(EventState):
         self._request_msg_handler = BtDataHandler(request_msg_type, request_msg_pkg)
         self._goal_msg_handler = BtDataHandler(goal_msg_type)
 
-        self._return  = None
+        self._return = None
 
         fileparts = bt_file.split("/")
         fileparts[0] = get_package_share_directory(fileparts[0])
         self._file = "/".join(fileparts)
 
-        ProxyActionClient._initialize(BtExecuteGoalState._node)
-        self._client = ProxyActionClient({self._topic: BtExecute})
-
+        ProxyActionClient.initialize(BtExecuteGoalState._node)
+        self._client = ProxyActionClient({self._topic: BtExecute}, wait_duration=0)
 
     def execute(self, userdata):
         if self._return:
@@ -101,27 +99,26 @@ class BtExecuteGoalState(EventState):
                 try:
                     userdata.data = self._request_msg_handler.create_data_from_result(result.result_data)
                 except Exception as exc:
-                    Logger.logwarn("%s: Unable to create user data for %s: %s\n%s" %
-                            (self.name, self._request_msg_handler._msg_type, str(exc), str(result)))
+                    Logger.logwarn("%s: Unable to create user data for %s: %s - Data request id: %s\n%s" %
+                                   (self.name, self._request_msg_handler._msg_type, str(exc), str(self._request_id), str(result)))
 
             if result.code == 0:
                 Logger.loginfo('%s  Success!' % (self.name))
                 self._return = 'done'
             elif result.code == 1:
                 Logger.logerr('%s   Failure' % (self.name))
-                self._return =  'failed'
+                self._return = 'failed'
             elif result.code == 2:
                 Logger.logerr('%s   Canceled' % (self.name))
-                self._return =  'canceled'
+                self._return = 'canceled'
             else:
                 Logger.logerr('%s   Unknown error' % (self.name))
-                self._return =  'failed'
+                self._return = 'failed'
 
         return self._return
 
-
     def on_enter(self, userdata):
-        self._return  = None
+        self._return = None
 
         try:
             self._goal = BtExecute.Goal(behavior_tree=self._file,
@@ -138,15 +135,16 @@ class BtExecuteGoalState(EventState):
                 self._goal.msg_data = self._goal_msg_handler.create_data_string(goal)
 
             except Exception as exc:
-                Logger.logwarn('%s: Unable to set behavior tree goal message data for %s of %s\n%s\n%s ' % (self.name, self._topic, self._goal_msg_handler._msg_type, exc, userdata))
+                Logger.logwarn('%s: Unable to set behavior tree goal message data for %s of %s\n%s\n%s '
+                               % (self.name, self._topic, self._goal_msg_handler._msg_type, exc, userdata))
 
-            Logger.loginfo('%s: Sending behavior tree goal using topic %s with %s' % (self.name, self._topic, self._goal_msg_handler._msg_type))
+            Logger.loginfo('%s: Sending behavior tree goal using topic %s with %s'
+                           % (self.name, self._topic, self._goal_msg_handler._msg_type))
             self._client.send_goal(self._topic, self._goal)
 
         except Exception as exc:
             Logger.logwarn('%s: Was not able to send behavior tree goal using topic  %s ' % (self.name, self._topic))
             Logger.logwarn("Error : %s" % (exc))
-
 
     def on_exit(self, userdata):
         if self._topic in ProxyActionClient._result:

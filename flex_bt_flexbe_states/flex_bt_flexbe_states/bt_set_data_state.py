@@ -35,40 +35,35 @@
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
 
-import rosidl_runtime_py.convert
-
 from .utility.bt_data_handler import BtDataHandler
 
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxyActionClient
 from flex_bt_msgs.action import BtSetData
 
-from ament_index_python.packages import get_package_share_directory
-
 
 class BtSetDataState(EventState):
+    """
+    Set userdata in the BT Server's blackboard.
 
-    '''
-    Sets userdata in the BT Server's blackboard
     -- bt_topic          string       Topic name of the behavior tree action server
     -- goal_id           string       ID of the user input for the BT Server to set
     -- goal_msg_type     string       The message type for the BT Server to set
     ># goal              Variety      Either a single goal or list of goals
     <= done                           Finished behavior tree action
     <= failed                         Unable to perform behavior tree action
-    '''
+    """
 
     def __init__(self, bt_topic, goal_id, goal_msg_type):
-        super(BtSetDataState, self).__init__(outcomes = ['done', 'failed'], input_keys=['goal'])
+        super(BtSetDataState, self).__init__(outcomes=['done', 'failed'], input_keys=['goal'])
 
         self._topic = bt_topic
         self._goal_id = goal_id
         self._goal_msg_handler = BtDataHandler(goal_msg_type)
-        self._return  = None
+        self._return = None
 
-        ProxyActionClient._initialize(BtSetDataState._node)
-        self._client = ProxyActionClient({self._topic: BtSetData})
-
+        ProxyActionClient.initialize(BtSetDataState._node)
+        self._client = ProxyActionClient({self._topic: BtSetData}, wait_duration=0)
 
     def execute(self, userdata):
 
@@ -85,16 +80,15 @@ class BtSetDataState(EventState):
                 self._return = 'done'
             elif result.code == 1:
                 Logger.logerr('%s   Failure' % (self.name))
-                self._return =  'failed'
+                self._return = 'failed'
             else:
                 Logger.logerr('%s   Unknown error' % (self.name))
-                self._return =  'failed'
+                self._return = 'failed'
 
         return self._return
 
-
     def on_enter(self, userdata):
-        self._return  = None
+        self._return = None
 
         try:
             self._goal = BtSetData.Goal(goal_id=self._goal_id, goal_msg_type=self._goal_msg_handler._msg_type)
@@ -106,9 +100,11 @@ class BtSetDataState(EventState):
 
                 self._goal.msg_data = self._goal_msg_handler.create_data_string(goal)
             except Exception as exc:
-                Logger.logwarn('%s: Unable to set behavior tree goal message data for %s of %s\n%s\n%s ' % (self.name, self._topic, self._goal_msg_handler._msg_type, exc, userdata))
+                Logger.logwarn('%s: Unable to set behavior tree goal message data for %s of %s\n%s\n%s '
+                               % (self.name, self._topic, self._goal_msg_handler._msg_type, exc, userdata))
 
-            Logger.loginfo('Sending behavior tree set data goal using topic %s with %s' % (self._topic, self._goal_msg_handler._msg_type))
+            Logger.loginfo('Sending behavior tree set data goal using topic %s with %s'
+                           % (self._topic, self._goal_msg_handler._msg_type))
             self._client.send_goal(self._topic, self._goal)
 
         except Exception as exc:
