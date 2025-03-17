@@ -35,13 +35,14 @@
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
 ###############################################################################
+"""Bt Loader State class for flex_bt_flexbe_states."""
 
-from flexbe_core import EventState, Logger
-from flexbe_core.proxy import ProxyActionClient
+from ament_index_python.packages import get_package_share_directory
 
 from flex_bt_msgs.action import BtLoad
 
-from ament_index_python.packages import get_package_share_directory
+from flexbe_core import EventState, Logger
+from flexbe_core.proxy import ProxyActionClient
 
 
 class BtLoaderState(EventState):
@@ -56,6 +57,7 @@ class BtLoaderState(EventState):
     """
 
     def __init__(self, bt_topic, filepaths, timeout=5.0):
+        """Init method for loader state."""
         super(BtLoaderState, self).__init__(outcomes=['done', 'failed'])
 
         self._topic = bt_topic
@@ -68,7 +70,7 @@ class BtLoaderState(EventState):
         self._client = ProxyActionClient({self._topic: BtLoad}, wait_duration=0)
 
     def execute(self, userdata):
-
+        """Execute method for loader state."""
         if self._return:
             # Handle blocked transition by returning previous value
             return self._return
@@ -99,21 +101,22 @@ class BtLoaderState(EventState):
         return self._return
 
     def on_enter(self, userdata):
+        """Enter method for loader state."""
         # upon entering the state will attempt to load the BT
         self._return = None
 
         try:
             # Find each file in the workspace shared directory
             for i in range(len(self._filepaths)):
-                fileparts = self._filepaths[i].split("/")
+                fileparts = self._filepaths[i].split('/')
                 fileparts[0] = get_package_share_directory(fileparts[0])
-                self._filepaths[i] = "/".join(fileparts)
+                self._filepaths[i] = '/'.join(fileparts)
 
             self._client.send_goal(self._topic, BtLoad.Goal(filepaths=self._filepaths))
             Logger.loginfo('loading behavior tree(s) using topic %s ' % (self._topic))
         except Exception as e:
             Logger.logwarn('Was not able to load behavior tree(s) using topic  %s ' % (self._topic))
-            Logger.logwarn("Error : %s" % (e))
+            Logger.logwarn('Error : %s' % (e))
             self._return = 'failed'
 
         self._start_time = self._node.get_clock().now()

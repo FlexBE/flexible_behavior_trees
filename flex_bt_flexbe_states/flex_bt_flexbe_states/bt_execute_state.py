@@ -34,13 +34,14 @@
 #       WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
+"""Class for bt_execute_state.py."""
 
-from flexbe_core import EventState, Logger
-
-from flexbe_core.proxy import ProxyActionClient
+from ament_index_python.packages import get_package_share_directory
 
 from flex_bt_msgs.action import BtExecute
-from ament_index_python.packages import get_package_share_directory
+
+from flexbe_core import EventState, Logger
+from flexbe_core.proxy import ProxyActionClient
 
 
 class BtExecuteState(EventState):
@@ -57,19 +58,21 @@ class BtExecuteState(EventState):
     """
 
     def __init__(self, bt_topic, bt_file):
+        """Init method for execute state."""
         super(BtExecuteState, self).__init__(outcomes=['done', 'canceled', 'failed'])
 
         self._topic = bt_topic
         self._return = None
 
-        fileparts = bt_file.split("/")
+        fileparts = bt_file.split('/')
         fileparts[0] = get_package_share_directory(fileparts[0])
-        self._file = "/".join(fileparts)
+        self._file = '/'.join(fileparts)
 
         ProxyActionClient.initialize(BtExecuteState._node)
         self._client = ProxyActionClient({self._topic: BtExecute}, wait_duration=0)
 
     def execute(self, userdata):
+        """Execute method for execute state."""
         if self._return:
             # Handle blocked transition by returning previous value
             return self._return
@@ -93,6 +96,7 @@ class BtExecuteState(EventState):
         return self._return
 
     def on_enter(self, userdata):
+        """Enter method for execute state."""
         self._return = None
 
         self._goal = BtExecute.Goal(behavior_tree=self._file)
@@ -102,9 +106,10 @@ class BtExecuteState(EventState):
             self._client.send_goal(self._topic, self._goal)
         except Exception as e:
             Logger.logwarn('Was not able to send behavior tree goal using topic  %s ' % (self._topic))
-            Logger.logwarn("Error : %s" % (e))
+            Logger.logwarn('Error : %s' % (e))
 
     def on_exit(self, userdata):
+        """Exit method for exeecute state."""
         if self._topic in ProxyActionClient._result:
             ProxyActionClient._result[self._topic] = None
 

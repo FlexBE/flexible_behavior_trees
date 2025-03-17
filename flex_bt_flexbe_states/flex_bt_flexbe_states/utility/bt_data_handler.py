@@ -34,13 +34,15 @@
 #       WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
-
+"""Data handler class inside utility package in flex_bt_flexbe_states."""
 import importlib
-import rosidl_runtime_py.set_message
-import rosidl_runtime_py.convert
+
+# from flexbe_core import Logger
+
 import rclpy.time as time
 
-from flexbe_core import Logger
+import rosidl_runtime_py.convert
+import rosidl_runtime_py.set_message
 
 
 class BtDataHandler:
@@ -53,35 +55,35 @@ class BtDataHandler:
     -- msg_pkg   string   The package of the message ex. PoseStamped pkg is geometry_msgs
     """
 
-    _primitives = ("string", "char", "bool", "int", "double", "float")  # , "int[]", "double[]", "float[]")
-    _primitive_classes = {"string": str, "char": str, "bool": bool, "int": int, "double": float, "float": float}
+    _primitives = ('string', 'char', 'bool', 'int', 'double', 'float')  # , 'int[]', 'double[]', 'float[]')
+    _primitive_classes = {'string': str, 'char': str, 'bool': bool, 'int': int, 'double': float, 'float': float}
 
-    def __init__(self, msg_type="", msg_pkg=""):
-
+    def __init__(self, msg_type='', msg_pkg=''):
+        """Init method."""
         self._msg_pkg = msg_pkg
         self._msg_type = msg_type.lower()
         self._msg_base_type = msg_type.lower()
-        if "[]" in self._msg_base_type:
-            self._msg_base_type = self._msg_base_type.replace("[]", "")
+        if '[]' in self._msg_base_type:
+            self._msg_base_type = self._msg_base_type.replace('[]', '')
 
-        self._is_floating_point = self._msg_base_type == "float" or self._msg_base_type == "double"
+        self._is_floating_point = self._msg_base_type == 'float' or self._msg_base_type == 'double'
 
         self._msg_base_class = None
-        if self._msg_base_type == "path":
+        if self._msg_base_type == 'path':
             try:
-                if msg_pkg == "":
-                    msg_pkg = "geometry_msgs"
+                if msg_pkg == '':
+                    msg_pkg = 'geometry_msgs'
                     self._msg_pkg = msg_pkg
 
-                pose_module = importlib.import_module("geometry_msgs.msg")
-                self._path_pose_class = getattr(pose_module, "PoseStamped")
+                pose_module = importlib.import_module('geometry_msgs.msg')
+                self._path_pose_class = getattr(pose_module, 'PoseStamped')
             except Exception as exc:
                 raise ValueError(' Failed to load pose class for type %s/%s.msg\n %s' % (msg_pkg, msg_type, str(exc)))
         else:
             self._path_pose_class = None
 
         if self._msg_base_type not in self._primitives:
-            if msg_pkg != "" and msg_type != "":
+            if msg_pkg != '' and msg_type != '':
                 try:
                     msg_module = importlib.import_module('%s.msg' % msg_pkg)
                     self._msg_base_class = getattr(msg_module, msg_type)
@@ -100,14 +102,15 @@ class BtDataHandler:
     def convert_primitives(data):
         """Convert data to standard string format for data handling."""
         if type(data) is list:
-            return ";".join(str(element) for element in data)
+            return ';'.join(str(element) for element in data)
         else:
             return str(data)
 
     @staticmethod
     def split_data_string(data_string):
+        """Split data string."""
         try:
-            data = data_string.strip().split(";")
+            data = data_string.strip().split(';')
             # Note: empty string from ;; used to indicate end of sub message
             return data
 
@@ -125,12 +128,12 @@ class BtDataHandler:
         """
         # assert len(data_string_list) == 1, f"Calling create_primitve with list of length={len(data_string_list)}"
         if len(data_string_list) == 0:
-            raise ValueError(f"Cannot create primitive with no data.")
+            raise ValueError('Cannot create primitive with no data.')
         elif len(data_string_list) > 1:
-            raise ValueError(f"Too many arguments recieved.")
+            raise ValueError('Too many arguments recieved.')
         data = BtDataHandler.split_data_string(data_string_list[0])
 
-        if data[-1] == "":
+        if data[-1] == '':
             # Last element as empty string denotes end of data structure for messages
             # Not used in primitive processing
             data = data[:-1]
@@ -144,19 +147,19 @@ class BtDataHandler:
                 return floats[0]
             return floats
 
-        elif self._msg_type == "char":
+        elif self._msg_type == 'char':
             return chr(data[0])
 
-        elif self._msg_type == "bool":
+        elif self._msg_type == 'bool':
             # Accept True/T or False/F
-            if data[0].capitalize()[0] == "T":
+            if data[0].capitalize()[0] == 'T':
                 return True
-            elif data[0].capitalize()[0] == "F":
+            elif data[0].capitalize()[0] == 'F':
                 return False
             else:
-                raise ValueError(f"Invalid data for bool type ({data[0]})")
+                raise ValueError(f'Invalid data for bool type ({data[0]})')
 
-        elif self._msg_base_type == "int":
+        elif self._msg_base_type == 'int':
             ints = []
             for item in data:
                 ints.append(int(item))
@@ -182,7 +185,7 @@ class BtDataHandler:
 
             messages = []
 
-            if self._msg_type == "path":
+            if self._msg_type == 'path':
                 msg = self._msg_base_class()
 
                 msg_data = BtDataHandler.split_data_string(data_string_list[0])
@@ -201,7 +204,7 @@ class BtDataHandler:
             else:
                 for data_string in data_string_list:
                     msg_data = BtDataHandler.split_data_string(data_string)
-                    print(f" populate {self._msg_type} msg with {msg_data}")
+                    print(f' populate {self._msg_type} msg with {msg_data}')
                     msg, _ = self.populate_msg(self._msg_base_class(), msg_data)
                     messages.append(msg)
 
@@ -210,17 +213,18 @@ class BtDataHandler:
 
             return messages
         except Exception as exc:
-            raise ValueError(f"  Failed to create message from data string <{data_string_list}>\n{exc}")
+            raise ValueError(f'  Failed to create message from data string <{data_string_list}>\n{exc}')
 
     @staticmethod
     def populate_msg(message, data):
+        """Populate message."""
         fields = rosidl_runtime_py.convert.get_message_slot_types(message)
         base_msg = True
         fields_dict = {}
 
         for key in fields.keys():
             try:
-                if str(key) != "stamp":
+                if str(key) != 'stamp':
                     _ = rosidl_runtime_py.convert.get_message_slot_types(getattr(message, key))  # verify key
                     base_msg = False
 
@@ -232,11 +236,11 @@ class BtDataHandler:
                 continue
 
         if base_msg:
-            for i in range(data.index("")):
+            for i in range(data.index('')):
                 field_data = data[i]
-                field_data = field_data.split(":")
+                field_data = field_data.split(':')
 
-                if field_data[0] == "stamp":
+                if field_data[0] == 'stamp':
                     try:
                         fields_dict[field_data[0]] = time.Time(nanoseconds=int(field_data[1])).to_msg()
                     except Exception:  # pylint: disable=W0703
@@ -245,13 +249,13 @@ class BtDataHandler:
                 else:
                     fields_dict[field_data[0]] = field_data[1]
 
-            if "stamp" in fields_dict:
+            if 'stamp' in fields_dict:
                 for key in fields_dict.keys():
                     setattr(message, key, fields_dict[key])
             else:
                 rosidl_runtime_py.set_message.set_message_fields(message, fields_dict)
 
-            new_data_list = data[data.index("") + 1:]
+            new_data_list = data[data.index('') + 1:]
             return message, new_data_list
 
         return message, data
@@ -262,16 +266,16 @@ class BtDataHandler:
 
         if self._msg_type in self._primitives:
             msg_data.append(self.convert_primitives(data_list))
-        elif self._msg_type == "path":
+        elif self._msg_type == 'path':
             path = data_list[0]
-            assert self._msg_type in path.__class__.__name__.lower(), f"Goal type mis-match {path.__class__.__name__} not Path!"
+            assert self._msg_type in path.__class__.__name__.lower(), f'Goal type mis-match {path.__class__.__name__} not Path!'
             # fields = rosidl_runtime_py.convert.get_message_slot_types(path)
-            msg_data.append(BtDataHandler.get_fields(getattr(path, "header"), ""))
-            for pose in getattr(path, "poses"):
-                msg_data.append(BtDataHandler.get_fields(pose, ""))
+            msg_data.append(BtDataHandler.get_fields(getattr(path, 'header'), ''))
+            for pose in getattr(path, 'poses'):
+                msg_data.append(BtDataHandler.get_fields(pose, ''))
         else:
             for item in data_list:
-                fields_data = BtDataHandler.get_fields(item, "")
+                fields_data = BtDataHandler.get_fields(item, '')
                 msg_data.append(fields_data)
 
         return msg_data
@@ -284,17 +288,17 @@ class BtDataHandler:
             fields = rosidl_runtime_py.convert.get_message_slot_types(message)
 
             for key in fields.keys():
-                if str(key) == "stamp":
+                if str(key) == 'stamp':
                     # Represent as single uint64_t nanoseconds
-                    data += f"{getattr(message, key).sec*(10**9) + getattr(message, key).nanosec};"
+                    data += f'{getattr(message, key).sec * (10**9) + getattr(message, key).nanosec};'
                 else:
                     data = BtDataHandler.get_fields(getattr(message, key), data)
         except AttributeError:
             # Normal at bottom primitive in recursive call
-            data += str(message) + ";"
+            data += str(message) + ';'
         except Exception as exc:
-            print(f" Exception in get_fields {type(exc)}: {exc} - just use raw message")
-            data += str(message) + ";"
+            print(f' Exception in get_fields {type(exc)}: {exc} - just use raw message')
+            data += str(message) + ';'
 
         return data
 
@@ -302,7 +306,7 @@ class BtDataHandler:
     def check_fields(message1, message2):
         """Validate data fields in two messages of same type."""
         if not isinstance(message1, message2.__class__):
-            print("Messages must be same type to compare")
+            print('Messages must be same type to compare')
             return False
 
         try:
@@ -311,19 +315,19 @@ class BtDataHandler:
 
             equals = True
             for key in fields.keys():
-                if str(key) == "stamp":
+                if str(key) == 'stamp':
                     stamp1 = getattr(message1, key)
                     stamp2 = getattr(message2, key)
                     equals = equals and stamp1.sec == stamp2.sec
                     equals = equals and stamp1.nanosec == stamp2.nanosec
                     if not equals:
-                        print(f"Not equal at {key}: {message1.stamp} {message2.stamp}")
+                        print(f'Not equal at {key}: {message1.stamp} {message2.stamp}')
                         return False
                 else:
                     equals = equals and BtDataHandler.check_fields(getattr(message1, key), getattr(message2, key))
 
                 if not equals:
-                    print(f"Not equal at {key}")
+                    print(f'Not equal at {key}')
                     return False
 
             return equals
@@ -331,5 +335,5 @@ class BtDataHandler:
             # Normal at bottom primitive in recursive call
             return message1 == message2
         except Exception as exc:
-            print(f"Unknown exception {exc} in check_fields: {message1} {message2}")
+            print(f'Unknown exception {exc} in check_fields: {message1} {message2}')
             return False

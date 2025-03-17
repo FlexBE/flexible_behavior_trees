@@ -34,12 +34,13 @@
 #       WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
-
-from .utility.bt_data_handler import BtDataHandler
+"""Set data state class for package flex_bt_flexbe_states."""
+from flex_bt_msgs.action import BtSetData
 
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxyActionClient
-from flex_bt_msgs.action import BtSetData
+
+from .utility.bt_data_handler import BtDataHandler
 
 
 class BtSetDataState(EventState):
@@ -55,6 +56,7 @@ class BtSetDataState(EventState):
     """
 
     def __init__(self, bt_topic, goal_id, goal_msg_type):
+        """Init method for set data state."""
         super(BtSetDataState, self).__init__(outcomes=['done', 'failed'], input_keys=['goal'])
 
         self._topic = bt_topic
@@ -66,7 +68,7 @@ class BtSetDataState(EventState):
         self._client = ProxyActionClient({self._topic: BtSetData}, wait_duration=0)
 
     def execute(self, userdata):
-
+        """Execute method for set data state."""
         if self._return:
             # Handle blocked transition by returning previous value
             return self._return
@@ -88,6 +90,7 @@ class BtSetDataState(EventState):
         return self._return
 
     def on_enter(self, userdata):
+        """Enter method for set data state."""
         self._return = None
 
         try:
@@ -109,9 +112,10 @@ class BtSetDataState(EventState):
 
         except Exception as exc:
             Logger.logwarn('Was not able to send behavior tree goal using topic  %s ' % (self._topic))
-            Logger.logwarn("Error : %s" % (exc))
+            Logger.logwarn('Error : %s' % (exc))
 
     def on_exit(self, userdata):
+        """Exit method for set data state."""
         if self._topic in ProxyActionClient._result:
             ProxyActionClient._result[self._topic] = None
 

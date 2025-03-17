@@ -3,7 +3,7 @@
 <package format="3">
   <name>flex_bt_engine</name>
   <version>0.1.2</version>
-  <description>flex_bt_engine - a BehaviorTree engine based on behaviortree_cpp_v3
+  <description>flex_bt_engine - a BehaviorTree engine based on Behaviortree.CPP v4
   that interfaces with FlexBE-based HFSM flexbe_states</description>
   <author email="joshua.zutell.18@cnu.edu">Joshua Zutell</author>
 	<maintainer email="robotics@cnu.edu">Dr. David Conner</maintainer>
@@ -17,15 +17,15 @@
   <build_depend>rclcpp</build_depend>
   <build_depend>rclcpp_action</build_depend>
   <build_depend>rclcpp_lifecycle</build_depend>
-  <build_depend>behaviortree_cpp_v3</build_depend>
+  <build_depend>behaviortree_cpp</build_depend>
   <build_depend>builtin_interfaces</build_depend>
 
+  <exec_depend>behaviortree_cpp</exec_depend>
+  <exec_depend>builtin_interfaces</exec_depend>
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>rclcpp_action</exec_depend>
   <exec_depend>rclcpp_lifecycle</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>behaviortree_cpp_v3</exec_depend>
-  <exec_depend>builtin_interfaces</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>

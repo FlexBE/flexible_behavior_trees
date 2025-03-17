@@ -42,29 +42,29 @@ class TestFlexBEStates(PyTester):
 
     @classmethod
     def setUpClass(cls):
-
-        PyTester._package = "flex_bt_flexbe_states"
-        PyTester._tests_folder = "tests"
+        """Class definition for setup for flexbe_states."""
+        PyTester._package = 'flex_bt_flexbe_states'
+        PyTester._tests_folder = 'tests'
 
         super().setUpClass()  # Do this last after setting package and tests folder
 
     # The tests
     def test_bt_execute_goal_state(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("bt_execute_goal_state")
+        self.run_test('bt_execute_goal_state')
 
     def test_bt_execute_state(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("bt_execute_state")
+        self.run_test('bt_execute_state')
 
     def test_bt_get_data_state(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("bt_get_data_state")
+        self.run_test('bt_get_data_state')
 
     def test_bt_loader_state(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("bt_loader_state")
+        self.run_test('bt_loader_state')
 
     def test_bt_set_data_state(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("bt_set_data_state")
+        self.run_test('bt_set_data_state')

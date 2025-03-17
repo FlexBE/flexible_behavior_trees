@@ -34,12 +34,14 @@
 #       WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
+"""Get Data State class for flex_bt_flexbe_states."""
 
-from .utility.bt_data_handler import BtDataHandler
+from flex_bt_msgs.action import BtGetData
 
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxyActionClient
-from flex_bt_msgs.action import BtGetData
+
+from .utility.bt_data_handler import BtDataHandler
 
 
 class BtGetDataState(EventState):
@@ -56,6 +58,7 @@ class BtGetDataState(EventState):
     """
 
     def __init__(self, bt_topic, request_id, request_msg_pkg, request_msg_type):
+        """Init method for get data state."""
         super(BtGetDataState, self).__init__(outcomes=['done', 'failed'],
                                              output_keys=['data'])
 
@@ -69,7 +72,7 @@ class BtGetDataState(EventState):
         self._return = None
 
     def execute(self, userdata):
-
+        """Execute method for get data state."""
         if self._return:
             # Handle blocked transition by returning previous value
             return self._return
@@ -82,7 +85,7 @@ class BtGetDataState(EventState):
                 try:
                     userdata.data = self._request_msg_handler.create_data_from_result(result.result_data)
                 except Exception as exc:
-                    Logger.logwarn("%s: Unable to create user data for %s: %s\n%s" %
+                    Logger.logwarn('%s: Unable to create user data for %s: %s\n%s' %
                                    (self.name, self._request_msg_handler._msg_type, str(exc), str(result)))
 
             if result.code == 0:
@@ -98,6 +101,7 @@ class BtGetDataState(EventState):
         return self._return
 
     def on_enter(self, userdata):
+        """Enter method for get data state."""
         self._return = None
 
         try:
@@ -107,9 +111,10 @@ class BtGetDataState(EventState):
 
         except Exception as e:
             Logger.logwarn('%s: Was not able to send behavior tree goal using topic  %s ' % (self.name, self._topic))
-            Logger.logwarn("Error : %s" % (e))
+            Logger.logwarn('Error : %s' % (e))
 
     def on_exit(self, userdata):
+        """Exit method for get data state."""
         if self._topic in ProxyActionClient._result:
             ProxyActionClient._result[self._topic] = None
 

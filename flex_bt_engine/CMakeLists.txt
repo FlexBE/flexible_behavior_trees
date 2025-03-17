@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.5)
 project(flex_bt_engine CXX)
 
 find_package(ament_cmake REQUIRED)
+find_package(behaviortree_cpp REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
-find_package(builtin_interfaces REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
 
 
 include_directories(
@@ -16,10 +16,10 @@ include_directories(
 set(library_name ${PROJECT_NAME})
 
 set(dependencies
+  behaviortree_cpp
   rclcpp
   rclcpp_action
   rclcpp_lifecycle
-  behaviortree_cpp_v3
 )
 
 add_library(${library_name} SHARED

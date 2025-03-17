@@ -34,7 +34,7 @@
 #       WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
-
+"""Bt data handler main method for utility in fex_bt_flexbe_states."""
 
 from bt_data_handler import BtDataHandler
 
@@ -42,33 +42,33 @@ if __name__ == '__main__':
 
     # Some demonstrations of the BtDataHandler class
 
-    dh_double = BtDataHandler(msg_pkg="", msg_type="double")
-    data = dh_double.create_data_from_result(["3.1415927;"])
-    print(f"Type {type(data)} : {data}")
+    dh_double = BtDataHandler(msg_pkg='', msg_type='double')
+    data = dh_double.create_data_from_result(['3.1415927;'])
+    print(f'Type {type(data)} : {data}')
 
-    dh_float_list = BtDataHandler(msg_pkg="", msg_type="float[]")
-    data = dh_float_list.create_data_from_result(["3.1415927; 1.57; 6.28; -1.0"])
-    print(f"Type {type(data)} {type(data[0])} : {data}")
+    dh_float_list = BtDataHandler(msg_pkg='', msg_type='float[]')
+    data = dh_float_list.create_data_from_result(['3.1415927; 1.57; 6.28; -1.0'])
+    print(f'Type {type(data)} {type(data[0])} : {data}')
 
-    dh_bool = BtDataHandler(msg_pkg="", msg_type="bool")
-    data = dh_bool.create_data_from_result(["true"])
-    print(f"Type {type(data)} : {data}")
-    data = dh_bool.create_data_from_result(["F"])
-    print(f"Type {type(data)} : {data}")
-    data = dh_bool.create_data_from_result(["True"])
-    print(f"Type {type(data)} : {data}")
+    dh_bool = BtDataHandler(msg_pkg='', msg_type='bool')
+    data = dh_bool.create_data_from_result(['true'])
+    print(f'Type {type(data)} : {data}')
+    data = dh_bool.create_data_from_result(['F'])
+    print(f'Type {type(data)} : {data}')
+    data = dh_bool.create_data_from_result(['True'])
+    print(f'Type {type(data)} : {data}')
 
-    dh_pose = BtDataHandler(msg_pkg="geometry_msgs", msg_type="PoseStamped")
-    pose_string = f'stamp:{123*(10**9) + 5*(10**8)};frame_id:map;;' + \
+    dh_pose = BtDataHandler(msg_pkg='geometry_msgs', msg_type='PoseStamped')
+    pose_string = f'stamp:{123 * (10**9) + 5 * (10**8)};frame_id:map;;' + \
                   'x:1.0;y:2.0;z:3.0;;x:0.1;y:0.2;z:0.3;w:0.4;;'
     data = dh_pose.create_data_from_result([pose_string])
-    print(f"\n\n\nType {type(data)} : {data}")
+    print(f'\n\n\nType {type(data)} : {data}')
 
     from geometry_msgs.msg import PoseStamped
     pose = PoseStamped()
     pose.header.stamp.sec = 123
     pose.header.stamp.nanosec = 500000000
-    pose.header.frame_id = "map"
+    pose.header.frame_id = 'map'
     pose.pose.position.x = 1.
     pose.pose.position.y = 2.
     pose.pose.position.z = 3.
@@ -76,20 +76,20 @@ if __name__ == '__main__':
     pose.pose.orientation.y = 0.2
     pose.pose.orientation.z = 0.3
     pose.pose.orientation.w = 0.4
-    print(f"\n\nNative {type(pose)} : {data}")
+    print(f'\n\nNative {type(pose)} : {data}')
     if not dh_pose.check_fields(pose, data):
-        print("\n\n\nConversion error!")
+        print('\n\n\nConversion error!')
         exit(-1)
     else:
-        print("\n\nValid data conversion for PoseStamped!")
-        print("  ", pose.pose.position)
-        print("  ", data.pose.position)
+        print('\n\nValid data conversion for PoseStamped!')
+        print('  ', pose.pose.position)
+        print('  ', data.pose.position)
 
     data_string_list = dh_pose.create_data_string([pose])
-    print("\n\nPoseStamped data string from message: ", data_string_list)
+    print('\n\nPoseStamped data string from message: ', data_string_list)
 
-    print("\n\nPath:")
-    dh_path = BtDataHandler(msg_pkg="nav_msgs", msg_type="Path")
+    print('\n\nPath:')
+    dh_path = BtDataHandler(msg_pkg='nav_msgs', msg_type='Path')
     path_result = ['stamp:;frame_id:map;',
                    'stamp:;frame_id:;;x:-0.552;y:-0.177;z:0.00;;x:0.00;y:0.00;z:0.00;w:1.00;;',
                    'stamp:;frame_id:;;x:-0.553;y:-0.152;z:0.00;;x:0.00;y:0.00;z:0.00;w:1.00;;',
@@ -102,6 +102,6 @@ if __name__ == '__main__':
                    'stamp:;frame_id:;;x:-0.645;y:0.789;z:0.00;;x:0.00;y:0.00;z:0.00;w:1.00;;',
                    'stamp:;frame_id:;;x:-0.646;y:0.789;z:0.00;;x:0.00;y:0.00;z:0.571;w:0.821;;']
     data = dh_path.create_data_from_result(path_result)
-    print(f"Type {type(data)} : {data.header}")
+    print(f'Type {type(data)} : {data.header}')
     for pose in data.poses:
         print(pose)

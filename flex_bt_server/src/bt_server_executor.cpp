@@ -38,40 +38,19 @@
 #include <utility>
 #include <vector>
 
-#include "nav2_bt_navigator/bt_navigator.hpp"
-#include "nav2_util/geometry_utils.hpp"
-#include "nav2_util/robot_utils.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+
+// #include "flex_bt_bt_navigator/bt_navigator.hpp"
+// #include "flex_bt/geometry_utils.hpp"
+// #include "flex_bt/robot_utils.hpp"
 
 namespace flex_bt
 {
 BtServerExecutor::BtServerExecutor(const rclcpp::NodeOptions & options)
-: nav2_util::LifecycleNode("bt_server", "", options), start_time_(0)
+: flex_bt::LifecycleNode("bt_server", "", options), start_time_(0)
 {
-  const std::vector<std::string> plugin_libs = {
-    "nav2_back_up_action_bt_node",
-    "nav2_spin_action_bt_node",
-    "nav2_wait_action_bt_node",
-    "nav2_goal_reached_condition_bt_node",
-    "nav2_goal_updated_condition_bt_node",
-    "nav2_rate_controller_bt_node",
-    "nav2_recovery_node_bt_node",
-    "nav2_pipeline_sequence_bt_node",
-    "nav2_goal_updater_node_bt_node",
-    "nav2_compute_path_to_pose_action_bt_node",
-    "nav2_follow_path_action_bt_node",
-    "nav2_clear_costmap_service_bt_node",
-    "nav2_is_stuck_condition_bt_node",
-    "nav2_initial_pose_received_condition_bt_node",
-    "nav2_reinitialize_global_localization_service_bt_node",
-    "nav2_distance_controller_bt_node",
-    "nav2_speed_controller_bt_node",
-    "nav2_truncate_path_action_bt_node",
-    "nav2_round_robin_node_bt_node",
-    "nav2_transform_available_condition_bt_node",
-    "nav2_time_expired_condition_bt_node",
-    "nav2_distance_traveled_condition_bt_node",
-    "nav2_is_battery_low_condition_bt_node",
-  };
+  // Default plugin names to load
+  const std::vector<std::string> plugin_libs = { };
 
   declare_parameter("default_bt_xml_filename", rclcpp::ParameterValue(std::string("")));
   declare_parameter("plugin_lib_names", rclcpp::ParameterValue(plugin_libs));
@@ -84,13 +63,12 @@ BtServerExecutor::BtServerExecutor(const rclcpp::NodeOptions & options)
   declare_parameter("bt_set_data_name", rclcpp::ParameterValue(std::string("bt_set_data")));
   declare_parameter("bt_get_data_name", rclcpp::ParameterValue(std::string("bt_get_data")));
   declare_parameter("enable_groot_monitoring", rclcpp::ParameterValue(true));
-  declare_parameter("groot_zmq_publisher_port", rclcpp::ParameterValue(1666));
-  declare_parameter("groot_zmq_server_port", rclcpp::ParameterValue(1667));
+  declare_parameter("groot_server_port", rclcpp::ParameterValue(1667));
 }
 
 BtServerExecutor::~BtServerExecutor() { RCLCPP_INFO(get_logger(), "Destroying"); }
 
-nav2_util::CallbackReturn BtServerExecutor::on_configure(const rclcpp_lifecycle::State & /*state*/)
+flex_bt::CallbackReturn BtServerExecutor::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Configuring BT Server");
 
@@ -128,26 +106,26 @@ nav2_util::CallbackReturn BtServerExecutor::on_configure(const rclcpp_lifecycle:
       &BtServerExecutor::completionCallback, this, std::placeholders::_1, std::placeholders::_2));
 
   bt_action_server_->on_configure();
-  return nav2_util::CallbackReturn::SUCCESS;
+  return flex_bt::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn BtServerExecutor::on_activate(const rclcpp_lifecycle::State &)
+flex_bt::CallbackReturn BtServerExecutor::on_activate(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Activating");
   bt_action_server_->on_activate();
   createBond();
-  return nav2_util::CallbackReturn::SUCCESS;
+  return flex_bt::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn BtServerExecutor::on_deactivate(const rclcpp_lifecycle::State &)
+flex_bt::CallbackReturn BtServerExecutor::on_deactivate(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Deactivating");
   bt_action_server_->on_deactivate();
   destroyBond();
-  return nav2_util::CallbackReturn::SUCCESS;
+  return flex_bt::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn BtServerExecutor::on_cleanup(const rclcpp_lifecycle::State &)
+flex_bt::CallbackReturn BtServerExecutor::on_cleanup(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Cleaning up");
   tf_listener_.reset();
@@ -156,13 +134,13 @@ nav2_util::CallbackReturn BtServerExecutor::on_cleanup(const rclcpp_lifecycle::S
   bt_action_server_.reset();
   plugin_lib_names_.clear();
   RCLCPP_INFO(get_logger(), "Completed Cleaning up");
-  return nav2_util::CallbackReturn::SUCCESS;
+  return flex_bt::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn BtServerExecutor::on_shutdown(const rclcpp_lifecycle::State &)
+flex_bt::CallbackReturn BtServerExecutor::on_shutdown(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Shutting down");
-  return nav2_util::CallbackReturn::SUCCESS;
+  return flex_bt::CallbackReturn::SUCCESS;
 }
 
 bool BtServerExecutor::goalReceived(BtExecute::Goal::ConstSharedPtr goal)
@@ -213,10 +191,40 @@ void BtServerExecutor::onLoop()
   feedback_msg->active_nodes =
     feedback_msg->active_nodes.substr(0, feedback_msg->active_nodes.length() - 2);
 
-  nav2_util::getCurrentPose(
-    feedback_msg->current_location, *tf_, global_frame_, robot_frame_, transform_tolerance_);
-  feedback_msg->execution_time = now() - start_time_;
-  bt_action_server_->publishFeedback(feedback_msg);
+  // flex_bt::getCurrentPose(
+  // feedback_msg->current_location, *tf_, global_frame_, robot_frame_, transform_tolerance_);
+  tf2::toMsg(tf2::Transform::getIdentity(), feedback_msg->current_location.pose);
+  feedback_msg->current_location.header.frame_id = robot_frame_;
+  feedback_msg->current_location.header.stamp = now();
+
+  try {
+    feedback_msg->current_location = tf_->transform(
+      feedback_msg->current_location, global_frame_,
+      tf2::durationFromSec(transform_tolerance_));
+
+    feedback_msg->execution_time = now() - start_time_;
+    bt_action_server_->publishFeedback(feedback_msg);
+  } catch (tf2::LookupException & ex) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "No Transform available Error looking up target frame: %s\n", ex.what());
+  } catch (tf2::ConnectivityException & ex) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Connectivity Error looking up target frame: %s\n", ex.what());
+  } catch (tf2::ExtrapolationException & ex) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Extrapolation Error looking up target frame: %s\n", ex.what());
+  } catch (tf2::TimeoutException & ex) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Transform timeout with tolerance: %.4f", transform_tolerance_);
+  } catch (tf2::TransformException & ex) {
+    RCLCPP_ERROR(
+      get_logger(), "Failed to transform from %s to %s",
+      feedback_msg->current_location.header.frame_id.c_str(), global_frame_.c_str());
+  }
 }
 
 void BtServerExecutor::onPreempt(BtExecute::Goal::ConstSharedPtr goal)

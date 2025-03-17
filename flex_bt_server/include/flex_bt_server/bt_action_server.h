@@ -42,14 +42,14 @@
 #include "flex_bt_msgs/action/bt_get_data.hpp"
 #include "flex_bt_msgs/action/bt_load.hpp"
 #include "flex_bt_msgs/action/bt_set_data.hpp"
+#include "flex_bt_server/lifecycle_node.hpp"
+#include "flex_bt_server/simple_action_server.hpp"
 #include "flex_bt_server/string_conversions.h"
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/point_stamped.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "nav2_util/lifecycle_node.hpp"
-#include "nav2_util/simple_action_server.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "std_msgs/msg/header.hpp"
 
@@ -59,16 +59,16 @@ template <class ActionT>
 class BtActionServer
 {
 public:
-  using ActionServer = nav2_util::SimpleActionServer<ActionT>;
+  using ActionServer = flex_bt::SimpleActionServer<ActionT>;
 
   using BtLoad = flex_bt_msgs::action::BtLoad;
-  using BtLoadServer = nav2_util::SimpleActionServer<BtLoad>;
+  using BtLoadServer = flex_bt::SimpleActionServer<BtLoad>;
 
   using BtSetData = flex_bt_msgs::action::BtSetData;
-  using BtSetDataServer = nav2_util::SimpleActionServer<BtSetData>;
+  using BtSetDataServer = flex_bt::SimpleActionServer<BtSetData>;
 
   using BtGetData = flex_bt_msgs::action::BtGetData;
-  using BtGetDataServer = nav2_util::SimpleActionServer<BtGetData>;
+  using BtGetDataServer = flex_bt::SimpleActionServer<BtGetData>;
 
   typedef std::function<bool(typename ActionT::Goal::ConstSharedPtr)> OnGoalReceivedCallback;
   typedef std::function<void()> OnLoopCallback;
@@ -77,7 +77,7 @@ public:
     OnCompletionCallback;
 
   explicit BtActionServer(
-    const std::shared_ptr<nav2_util::LifecycleNode> parent, const std::string & action_name,
+    const std::shared_ptr<flex_bt::LifecycleNode> parent, const std::string & action_name,
     const std::string & bt_server_name, const std::string & bt_set_data_name,
     const std::string & bt_get_data_name, const std::vector<std::string> & plugin_lib_names,
     const std::string & default_bt_xml_filename, OnGoalReceivedCallback on_goal_received_callback,
@@ -176,17 +176,22 @@ public:
     RCLCPP_INFO(logger_, "Configuration:\n    bt_loop_duration: %ld", bt_loop_duration_.count());
     RCLCPP_INFO(logger_, "    default_server_timeout: %ld", default_server_timeout_.count());
     RCLCPP_INFO(logger_, "    wait_for_service_timeout: %ld", wait_for_service_timeout_.count());
+    RCLCPP_INFO(logger_, "    wait_for_service_timeout: %ld", wait_for_service_timeout_.count());
     RCLCPP_INFO(logger_, "    always reload bt xml: %d", always_reload_bt_xml_);
 
     // Create the class that registers our custom nodes and executes the BT
+    RCLCPP_INFO(logger_, "\x1b[94m    Creating behavior tree engine ...\x1b[0m");
     bt_ = std::make_unique<flex_bt::BehaviorTreeEngine>(plugin_lib_names_);
 
+    RCLCPP_INFO(logger_, "\x1b[94m    Create BT blackboard ...\x1b[0m");
     blackboard_ = BT::Blackboard::create();
     blackboard_->set<rclcpp::Node::SharedPtr>("node", client_node_);
     blackboard_->set<std::chrono::milliseconds>("server_timeout", default_server_timeout_);
     blackboard_->set<std::chrono::milliseconds>("bt_loop_duration", bt_loop_duration_);
     blackboard_->set<std::chrono::milliseconds>(
       "wait_for_service_timeout", wait_for_service_timeout_);
+    RCLCPP_INFO(logger_, "\x1b[94m   Done configuring BT action server!\x1b[0m");
+
     return true;
   };
 
@@ -306,12 +311,13 @@ public:
   void setupGroot()
   {
     if (node_->get_parameter("enable_groot_monitoring").as_bool()) {
-      uint16_t zmq_publisher_port = node_->get_parameter("groot_zmq_publisher_port").as_int();
-      uint16_t zmq_server_port = node_->get_parameter("groot_zmq_server_port").as_int();
+      uint16_t groot_server_port = node_->get_parameter("groot_server_port").as_int();
+      RCLCPP_INFO(logger_, "Add Groot monitoring at ports (%d) loading BT",
+                  groot_server_port);
       try {
-        bt_->addGrootMonitoring(current_tree_, zmq_publisher_port, zmq_server_port);
+        bt_->addGrootMonitoring(current_tree_, groot_server_port);
       } catch (const std::logic_error & e) {
-        RCLCPP_ERROR(logger_, "ZMQ already enabled, Error: %s", e.what());
+        RCLCPP_ERROR(logger_, "Failed to establish Groot already enabled, Error: %s", e.what());
       }
     }
   }
@@ -706,8 +712,10 @@ protected:
     };
 
     // Execute the BT
+    // set up groot publisher here or in engine?
     flex_bt::BtStatus status = bt_->run(current_tree_, on_loop, is_canceling, bt_loop_duration_);
     bt_->haltAllActions(current_tree_->rootNode());
+    // clear publisher pointer after run
 
     // After executing send back the action server's result message
     auto result = std::make_shared<typename ActionT::Result>();
@@ -864,7 +872,7 @@ protected:
   std::vector<std::string> plugin_lib_names_;
 
   rclcpp::Node::SharedPtr client_node_;
-  std::shared_ptr<nav2_util::LifecycleNode> node_;
+  std::shared_ptr<flex_bt::LifecycleNode> node_;
 
   rclcpp::Clock::SharedPtr clock_;
 

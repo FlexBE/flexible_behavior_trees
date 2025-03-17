@@ -21,10 +21,12 @@
 #include <string>
 #include <vector>
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
-#include "behaviortree_cpp_v3/xml_parsing.h"
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/loggers/groot2_publisher.h"
+#include "behaviortree_cpp/xml_parsing.h"
+
+#include "rclcpp/rclcpp.hpp"
 
 namespace flex_bt
 {
@@ -34,6 +36,8 @@ enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
 class BehaviorTreeEngine
 {
 public:
+  std::unique_ptr<BT::Groot2Publisher> publisher_;
+
   explicit BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries);
   virtual ~BehaviorTreeEngine() {}
 
@@ -45,9 +49,7 @@ public:
 
   BT::Tree createTreeFromFile(const std::string & file_path, BT::Blackboard::Ptr blackboard);
 
-  void addGrootMonitoring(
-    BT::Tree * tree, uint16_t publisher_port, uint16_t server_port,
-    uint16_t max_msg_per_second = 25);
+  void addGrootMonitoring(BT::Tree * tree, uint16_t server_port);
 
   void resetGrootMonitor();
 
@@ -56,7 +58,7 @@ public:
 protected:
   // The factory that will be used to dynamically construct the behavior tree
   BT::BehaviorTreeFactory factory_;
-  std::unique_ptr<BT::PublisherZMQ> groot_monitor_;
+  std::unique_ptr<BT::Groot2Publisher> groot2_monitor_;
 };
 }  // namespace flex_bt
 

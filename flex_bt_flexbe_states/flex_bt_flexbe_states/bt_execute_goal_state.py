@@ -35,13 +35,16 @@
 #       POSSIBILITY OF SUCH DAMAGE.
 ###############################################################################
 
-from .utility.bt_data_handler import BtDataHandler
+"""Execute a Behavior Tree from a file defined by the userdata."""
+
+from ament_index_python.packages import get_package_share_directory
+
+from flex_bt_msgs.action import BtExecute
 
 from flexbe_core import EventState, Logger
 from flexbe_core.proxy import ProxyActionClient
-from flex_bt_msgs.action import BtExecute
 
-from ament_index_python.packages import get_package_share_directory
+from .utility.bt_data_handler import BtDataHandler
 
 
 class BtExecuteGoalState(EventState):
@@ -63,8 +66,9 @@ class BtExecuteGoalState(EventState):
     <= failed                         Unable to perform behavior tree action
     """
 
-    def __init__(self, bt_topic, bt_file, goal_id, goal_msg_type, request_id="",
-                 request_msg_pkg="", request_msg_type=""):
+    def __init__(self, bt_topic, bt_file, goal_id, goal_msg_type, request_id='',
+                 request_msg_pkg='', request_msg_type=''):
+        """Initialize BtExecuteGoalState."""
         super(BtExecuteGoalState, self).__init__(outcomes=['done', 'canceled', 'failed'],
                                                  input_keys=['goal'],
                                                  output_keys=['data'])
@@ -79,14 +83,15 @@ class BtExecuteGoalState(EventState):
 
         self._return = None
 
-        fileparts = bt_file.split("/")
+        fileparts = bt_file.split('/')
         fileparts[0] = get_package_share_directory(fileparts[0])
-        self._file = "/".join(fileparts)
+        self._file = '/'.join(fileparts)
 
         ProxyActionClient.initialize(BtExecuteGoalState._node)
         self._client = ProxyActionClient({self._topic: BtExecute}, wait_duration=0)
 
     def execute(self, userdata):
+        """Execute method for execute goal state."""
         if self._return:
             # Handle blocked transition by returning previous value
             return self._return
@@ -99,7 +104,7 @@ class BtExecuteGoalState(EventState):
                 try:
                     userdata.data = self._request_msg_handler.create_data_from_result(result.result_data)
                 except Exception as exc:
-                    Logger.logwarn("%s: Unable to create user data for %s: %s - Data request id: %s\n%s" %
+                    Logger.logwarn('%s: Unable to create user data for %s: %s - Data request id: %s\n%s' %
                                    (self.name, self._request_msg_handler._msg_type, str(exc), str(self._request_id), str(result)))
 
             if result.code == 0:
@@ -118,6 +123,7 @@ class BtExecuteGoalState(EventState):
         return self._return
 
     def on_enter(self, userdata):
+        """On enter method for execute goal state."""
         self._return = None
 
         try:
@@ -135,8 +141,10 @@ class BtExecuteGoalState(EventState):
                 self._goal.msg_data = self._goal_msg_handler.create_data_string(goal)
 
             except Exception as exc:
-                Logger.logwarn('%s: Unable to set behavior tree goal message data for %s of %s\n%s\n%s '
+                Logger.logwarn('%s: Unable to set behavior tree goal message data for %s of %s\n%s\n%s, \nwere 2 poses input?'
                                % (self.name, self._topic, self._goal_msg_handler._msg_type, exc, userdata))
+                self._return = 'canceled'
+                return
 
             Logger.loginfo('%s: Sending behavior tree goal using topic %s with %s'
                            % (self.name, self._topic, self._goal_msg_handler._msg_type))
@@ -144,9 +152,11 @@ class BtExecuteGoalState(EventState):
 
         except Exception as exc:
             Logger.logwarn('%s: Was not able to send behavior tree goal using topic  %s ' % (self.name, self._topic))
-            Logger.logwarn("Error : %s" % (exc))
+            Logger.logwarn('Error : %s' % (exc))
+            self._return = 'failed'
 
     def on_exit(self, userdata):
+        """Exit method for execute goal state."""
         if self._topic in ProxyActionClient._result:
             ProxyActionClient._result[self._topic] = None
 

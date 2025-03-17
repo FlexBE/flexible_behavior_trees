@@ -15,19 +15,45 @@
 
 #include "flex_bt_engine/behavior_tree_engine.hpp"
 
-#include "behaviortree_cpp_v3/utils/shared_library.h"
+#include <dlfcn.h>
+#include <link.h>
+#include <iostream>
+
+#include "behaviortree_cpp/utils/shared_library.h"
 #include "rclcpp/rclcpp.hpp"
+
+
+void printLibraryInfo() {
+   Dl_info dl_info;
+    if (dladdr(reinterpret_cast<void *>(&BT::WildcardMatch), &dl_info) == 0) {
+        std::cerr << "Failed to get BehaviorTree.CPP library information: "
+        << dlerror() << std::flush << std::endl;
+    } else {
+        std::cout << "BehaviorTree.CPP Library Path: "
+        << dl_info.dli_fname  << std::flush<< std::endl;
+    }
+}
 
 namespace flex_bt
 {
 
-BehaviorTreeEngine::BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries)
+
+BehaviorTreeEngine::BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries) :
+factory_()
 {
+  printLibraryInfo();
   BT::SharedLibrary loader;
   for (const auto & p : plugin_libraries) {
-    factory_.registerFromPlugin(loader.getOSName(p));
+    const auto p_name = loader.getOSName(p);
+    try {
+      factory_.registerFromPlugin(p_name);
+    } catch (const std::exception & ex) {
+      std::cout << "\x1b[95m  Error loading plugin "
+       << p << " : " << std::endl << ex.what() << " ...\x1b[0m" << std::endl << std::flush;
+    }
   }
 }
+
 
 BtStatus BehaviorTreeEngine::run(
   BT::Tree * tree, std::function<void()> onLoop, std::function<bool()> cancelRequested,
@@ -36,20 +62,23 @@ BtStatus BehaviorTreeEngine::run(
   rclcpp::WallRate loopRate(loopTimeout);
   BT::NodeStatus result = BT::NodeStatus::RUNNING;
 
+
   // Loop until something happens with ROS or the node completes
   while (rclcpp::ok() && result == BT::NodeStatus::RUNNING) {
     if (cancelRequested()) {
-      tree->rootNode()->halt();
+      tree->rootNode()->haltNode();
       return BtStatus::CANCELED;
     }
 
     try {
-      result = tree->tickRoot();
+      result = tree->tickOnce();
     } catch (const std::exception & ex) {
       return BtStatus::FAILED;
     }
 
     onLoop();
+
+
 
     loopRate.sleep();
   }
@@ -69,23 +98,28 @@ BT::Tree BehaviorTreeEngine::createTreeFromFile(
   return factory_.createTreeFromFile(file_path, blackboard);
 }
 
-void BehaviorTreeEngine::addGrootMonitoring(
-  BT::Tree * tree, uint16_t publisher_port, uint16_t server_port, uint16_t max_msg_per_second)
+void BehaviorTreeEngine::addGrootMonitoring(BT::Tree * tree, uint16_t server_port)
 {
-  // This logger publish status changes using ZeroMQ. Used by Groot
-  groot_monitor_ =
-    std::make_unique<BT::PublisherZMQ>(*tree, max_msg_per_second, publisher_port, server_port);
+  // This logger publish status changes using Groot2Publisher. Used by Groot
+  groot2_monitor_ =
+    std::make_unique<BT::Groot2Publisher>(*tree, server_port);
+  std::cout << "Defined Groot2 publisher at port " << server_port << "!" << std::endl;
 }
 
-void BehaviorTreeEngine::resetGrootMonitor() { groot_monitor_.reset(); }
+void BehaviorTreeEngine::resetGrootMonitor() {
+  groot2_monitor_.reset();
+
+  // RCLCPP_ERROR(node->get_logger(), "Not using Groot!");
+  std::cout << "Not using Groot!" << std::endl;
+  }
 
 void BehaviorTreeEngine::haltAllActions(BT::TreeNode * root_node)
 {
   // this halt signal should propagate through the entire tree.
-  root_node->halt();
+  root_node->haltNode();
   auto visitor = [](BT::TreeNode * node) {
     if (node->status() == BT::NodeStatus::RUNNING) {
-      node->halt();
+      node->haltNode();
     }
   };
   BT::applyRecursiveVisitor(root_node, visitor);

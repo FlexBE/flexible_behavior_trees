@@ -35,7 +35,11 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   auto btServerExecutorNode = std::make_shared<flex_bt::BtServerExecutor>();
-  rclcpp::spin(btServerExecutorNode->get_node_base_interface());
+  try {
+    rclcpp::spin(btServerExecutorNode->get_node_base_interface());
+  } catch (const std::exception & ex) {
+    std::cout << " Error: " << ex.what() << std::endl << std::flush;
+  }
   rclcpp::shutdown();
   return 0;
 }

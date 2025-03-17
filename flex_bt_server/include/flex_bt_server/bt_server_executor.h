@@ -33,74 +33,79 @@
 #include <string>
 #include <vector>
 
-#include "behaviortree_cpp_v3/basic_types.h"
+#include "behaviortree_cpp/basic_types.h"
+
+// #include "behaviortree_cpp/loggers/groot2_publisher.h"
+// #include "flex_bt_engine/behavior_tree_engine.hpp"
+
+
 #include "flex_bt_server/bt_action_server.h"
-#include "nav2_util/geometry_utils.hpp"
-#include "nav2_util/lifecycle_node.hpp"
-#include "nav2_util/odometry_utils.hpp"
-#include "nav2_util/robot_utils.hpp"
-#include "nav2_util/simple_action_server.hpp"
+#include "flex_bt_server/lifecycle_node.hpp"
+#include "flex_bt_server/simple_action_server.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include "tf2_ros/buffer.h"
 #include "tf2_ros/create_timer_ros.h"
 #include "tf2_ros/transform_listener.h"
 
 namespace flex_bt
 {
+
 /**
    * @class flex_bt::BtServerExecutor
    * @brief Executes the BT Action Server with defined callbacks
    */
-class BtServerExecutor : public nav2_util::LifecycleNode
+class BtServerExecutor : public flex_bt::LifecycleNode
 {
 public:
   /**
-     * @brief A constructor for nav2_bt_navigator::BtNavigator class
+     * @brief A constructor for flex_bt::BtServerExecutor class
      */
   explicit BtServerExecutor(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   /**
-     * @brief A destructor for nav2_bt_navigator::BtNavigator class
+     * @brief A destructor forflex_bt::BtServerExecutor class
      */
   ~BtServerExecutor();
+
 
 protected:
   /**
      * @brief Configures member variables
      *
-     * Initializes action server for "NavigationToPose"; subscription to
+     * Initializes bt server executor
      * "goal_sub"; and builds behavior tree from xml file.
      * @param state Reference to LifeCycle node state
      * @return SUCCESS or FAILURE
      */
-  nav2_util::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
+  flex_bt::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
 
   /**
      * @brief Activates action server
      * @param state Reference to LifeCycle node state
      * @return SUCCESS or FAILURE
      */
-  nav2_util::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
+  flex_bt::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
 
   /**
      * @brief Deactivates action server
      * @param state Reference to LifeCycle node state
      * @return SUCCESS or FAILURE
      */
-  nav2_util::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
+  flex_bt::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
 
   /**
      * @brief Resets member variables
      * @param state Reference to LifeCycle node state
      * @return SUCCESS or FAILURE
      */
-  nav2_util::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
+  flex_bt::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
 
   /**
      * @brief Called when in shutdown state
      * @param state Reference to LifeCycle node state
      * @return SUCCESS or FAILURE
      */
-  nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
+  flex_bt::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
 
   // Behavior Tree and BtExecute Action Servers
   using BtExecute = flex_bt_msgs::action::BtExecute;
