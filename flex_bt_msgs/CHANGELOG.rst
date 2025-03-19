@@ -2,6 +2,9 @@
 Changelog for package flex_bt_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.3 (2025-03-18)
+------------------
+
 0.1.2 (2024-06-21)
 ------------------
 * Initial development for ROS 2 FLexBE

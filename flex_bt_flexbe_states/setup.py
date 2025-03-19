@@ -10,7 +10,7 @@ submodules = 'flex_bt_flexbe_states/utility'
 
 setup(
     name=package_name,
-    version='0.1.2',
+    version='0.1.3',
     packages=[package_name, submodules],
     data_files=[
         (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
